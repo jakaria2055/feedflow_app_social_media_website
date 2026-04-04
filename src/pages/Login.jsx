@@ -1,9 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import login_logo from "/image/login_page_logo.png";
 import AuthForm from "../components/AuthForm";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser, registerUser } from "../redux/slices/userSlices.js";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.user);
   const [searchParams] = useSearchParams();
   const [view, setView] = useState("login");
   const [errors, setErrors] = useState({});
@@ -16,6 +21,19 @@ const Login = () => {
   });
 
   const token = searchParams.get("token");
+
+  useEffect(() => {
+    if (token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setView("resetPassword");
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,11 +84,38 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log("Form Submitted:", { view, formData });
+
+    const isValid = validateForm();
+    if (!isValid) return;
+
+    console.log("Form Submitted:", { view, formData });
+
+    if (view === "register") {
+      dispatch(
+        registerUser(
+          {
+            username: formData.username,
+            email: formData.email,
+            password: formData.password,
+          }
+        ),
+      );
+    } else if (view === "login") {
+      dispatch(
+        loginUser(
+          {
+            email: formData.email,
+            password: formData.password,
+          },
+        ),
+      );
+    } else if (view === "forgotPassword") {
+      console.log("forgotPassword");
+    } else if (view === "resetPassword") {
+      console.log("resetPassword");
     }
 
-    //CLEAR FORM
+    // CLEAR FORM
     setFormData({
       username: "",
       email: "",
