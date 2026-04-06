@@ -9,15 +9,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-const Modal = ({ children }) => {
+const Modal = ({ open, onOpenChange, children }) => {
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {/* <DialogTrigger asChild>
         <Button variant="outline">Open Dialog</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-sm">
-
-        <div className="grid gap-4">{children}</div>
+      </DialogTrigger> */}
+      <DialogContent className="max-w-2xl bg-black p-0 border-none shadow-none overflow-hidden flex items-center justify-center">
+        <div className="relative w-full h-[90vh] md:w-[600px] md:h-[90vh] lg:w-[600px] lg:h-[90vh] bg-black overflow-hidden">
+          {children}
+        </div>
       </DialogContent>
     </Dialog>
   );
