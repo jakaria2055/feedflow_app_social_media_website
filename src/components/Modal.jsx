@@ -15,7 +15,7 @@ const Modal = ({ open, onOpenChange, children }) => {
       {/* <DialogTrigger asChild>
         <Button variant="outline">Open Dialog</Button>
       </DialogTrigger> */}
-      <DialogContent className="max-w-2xl bg-black p-0 border-none shadow-none overflow-hidden flex items-center justify-center">
+      <DialogContent className="w-full bg-black p-0 border-none shadow-none overflow-hidden flex items-center justify-center">
         <div className="relative w-full h-[90vh] md:w-[600px] md:h-[90vh] lg:w-[600px] lg:h-[90vh] bg-black overflow-hidden">
           {children}
         </div>
