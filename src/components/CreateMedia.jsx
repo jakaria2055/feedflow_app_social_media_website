@@ -2,7 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import { useDispatch } from "react-redux";
 import { getAllStories } from "../redux/slices/storiesSlice";
-import { ImageIcon, Upload, VideoIcon } from "lucide-react";
+import {
+  ImageIcon,
+  Pause,
+  Play,
+  Upload,
+  VideoIcon,
+  Volume,
+  VolumeX,
+} from "lucide-react";
 
 const CreateMedia = ({ type = "post" }) => {
   const [file, setFile] = useState(null);
@@ -38,7 +46,8 @@ const CreateMedia = ({ type = "post" }) => {
     }
   };
 
-  const handleFileChange = (e) => handleFileChange(e.target.files[0]);
+
+  const handleFileChange = (e) => handleFileSelect(e.target.files[0]);
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDraging(false);
@@ -66,7 +75,7 @@ const CreateMedia = ({ type = "post" }) => {
       if (currentType !== "story") formData.append("caption", caption);
       formData.append(
         "mediaType",
-        file.type.startWith("video/") ? "video" : "image",
+        file.type.startsWith("video/") ? "video" : "image",
       );
 
       const apiEndpoint =
@@ -143,36 +152,122 @@ const CreateMedia = ({ type = "post" }) => {
       </div>
 
       <form onSubmit={handleUpload} className="space-y-5 w-full">
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className={`w-full max-h-80 h-44 p-3 rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer relative overflow-hidden ${isDraging ? "border-purple-500 bg-purple-900/30" : "border-gray-600 hover:border-purple-400"}`}
-        >
-       { !previewUrl ?  <div className="flex flex-col items-center text-gray-400 space-y-2">
-            <Upload size={36} className="text-purple-600" />
-            <p className="text-center">
-              {isDraging ? "Drop Your file here..." : "Click or Drag & Drop"}
-            </p>
+        {!previewUrl ? (
+          <div
+            onClick={handleClickDropArea}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`w-full max-h-80 h-44 p-3 rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer relative overflow-hidden ${isDraging ? "border-purple-500 bg-purple-900/30" : "border-gray-600 hover:border-purple-400"}`}
+          >
+            <div className="flex flex-col items-center text-gray-400 space-y-2">
+              <Upload size={36} className="text-purple-600" />
+              <p className="text-center">
+                {isDraging ? "Drop Your file here..." : "Click or Drag & Drop"}
+              </p>
 
-            <div className="flex items-center gap-6 mt-2">
-              <div className="flex flex-col items-center">
-                <ImageIcon size={28} className="text-blue-400" />
-                <span className="text-xs">Image</span>
+              <div className="flex items-center gap-6 mt-2">
+                <div className="flex flex-col items-center">
+                  <ImageIcon size={28} className="text-blue-400" />
+                  <span className="text-xs">Image</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <VideoIcon size={28} className="text-green-400" />
+                  <span className="text-xs">Video</span>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-6 mt-2">
-              <div className="flex flex-col items-center">
-                <VideoIcon size={28} className="text-green-400" />
-                <span className="text-xs">Video</span>
-              </div>
-            </div>
-          </div>  
-          : 
+          </div>
+        ) : (
           <div className="w-full max-h-80 h-44 relative flex items-center justify-center rounded-xl overflow-hidden bg-gray-900/30">
-          
-          </div>}
-        </div>
+            {file.type.startsWith("video/") ? (
+              <>
+                <video
+                  ref={videoRef}
+                  src={previewUrl}
+                  className="max-w-full max-h-full object-contain rounded-xl"
+                />
+
+                <div className=" absolute bottom-2 left-2 flex gap-2 bg-black/50 p-1 rounded">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      isPlaying
+                        ? videoRef.current.pause()
+                        : videoRef.current.play()
+                    }
+                    className="text-white p-1"
+                  >
+                    {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      videoRef.current.muted = !videoRef.current.muted;
+                      setIsMuted(videoRef.current.muted);
+                    }}
+                    className="text-white p-1"
+                  >
+                    {isMuted ? <VolumeX size={20} /> : <Volume size={20} />}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <img
+                  src={previewUrl}
+                  alt="Preview"
+                  className="w-full max-h-full object-contain rounded-xl"
+                />
+              </>
+            )}
+            <button
+              onClick={() => {
+                setFile(null);
+                setPreviewUrl("");
+                (setIsMuted(false), setIsPlaying(false));
+                if (fileInputRef.current) fileInputRef.current.value = null;
+              }}
+              type="button"
+              className="absolute right-7 top-0 ring-2 bg-red-500 text-white rounded-full px-2.5 py-1 text-sm"
+            >
+              X
+            </button>
+          </div>
+        )}
+
+        <input
+          type="file"
+          accept="image/*, video/*"
+          onChange={handleFileChange}
+          ref={fileInputRef}
+          className="hidden"
+        />
+        {currentType !== "story" && (
+          <input
+            type="text"
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            placeholder="Add a caption..."
+            className="w-full px-3 py-2 rounded-lg bg-gray-800 outline-none text-white"
+          />
+        )}
+        {uploading && (
+          <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-linear-to-r from-purple-500 to-pink-500 h-2 transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        )}
+        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+        <button
+          type="submit"
+          disabled={uploading || !file}
+          className="w-full rounded-full bg-linear-to-r from-purple-500 to-pink-500 px-2 py-2 text-white font-semibold shadow-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {uploading ? "Uploading..." : buttonMap[currentType]}
+        </button>
       </form>
     </div>
   );

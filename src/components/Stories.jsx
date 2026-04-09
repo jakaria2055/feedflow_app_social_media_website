@@ -24,7 +24,7 @@ const Stories = () => {
   console.log("currentUser: ", currentUser);
   // const [stories, setStories] = useState([]);
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const createModalRef = useRef(null);
   const storiesModalRef = useRef(null);
@@ -50,7 +50,7 @@ const Stories = () => {
   const currentStoryUser = stories[currentUserIndex]?.user;
 
   const isLastStoryOfLastUser =
-    currentStoryIndex === stories.length - 1 &&
+    currentUserIndex === stories.length - 1 &&
     currentStoryIndex === currentUserStories.length - 1;
 
   const handlePlayPause = () => {
@@ -99,7 +99,7 @@ const Stories = () => {
       setProgress(0);
       setIsPlaying(true);
     } else if (currentUserIndex > 0) {
-      const previousUserStories = stories[currentStoryIndex - 1]?.stories || [];
+      const previousUserStories = stories[currentUserIndex - 1]?.stories || [];
       setCurrentUserIndex((prev) => prev - 1);
       setCurrentStoryIndex(previousUserStories.length - 1);
       setProgress(0);
@@ -108,33 +108,29 @@ const Stories = () => {
   };
 
   const handleNextStory = useCallback(() => {
-    const currentUserStories = stories[currentStoryIndex - 1]?.stories || [];
+    const activeUserStories = stories[currentUserIndex]?.stories || [];
+
     if (isLastStoryOfLastUser) {
       setTimeout(() => {
         setShowStoryModal(false);
       }, 300);
       return;
     }
-    if (currentStoryIndex < currentUserStories.length - 1) {
+
+    // Next story of same user
+    if (currentStoryIndex < activeUserStories.length - 1) {
       setCurrentStoryIndex((prev) => prev + 1);
-      setCurrentStoryIndex(0);
       setProgress(0);
       setIsPlaying(true);
-    } else if (currentStoryIndex < stories.length - 1) {
-      setCurrentStoryIndex((prev) => prev + 1);
+    }
+    // Move to next user's first story
+    else if (currentUserIndex < stories.length - 1) {
+      setCurrentUserIndex((prev) => prev + 1);
       setCurrentStoryIndex(0);
       setProgress(0);
       setIsPlaying(true);
     }
-  }, [
-    currentStoryIndex,
-    stories,
-    isLastStoryOfLastUser,
-    setShowStoryModal,
-    setCurrentStoryIndex,
-    setProgress,
-    setIsPlaying,
-  ]);
+  }, [currentStoryIndex, currentUserIndex, stories, isLastStoryOfLastUser]);
 
   const handleUserClick = (index) => {
     setCurrentUserIndex(index);
@@ -200,7 +196,7 @@ const Stories = () => {
   //VIDEO TIME UPDATE
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !currentStory?.mediaType !== "video") return;
+    if (!video || currentStory?.mediaType !== "video") return;
 
     const handleTimeUpdate = () => {
       if (video.duration) {
@@ -232,7 +228,7 @@ const Stories = () => {
 
     if (currentStory.mediaType === "video") {
       const video = videoRef.current;
-      if (!video) {
+      if (video) {
         video.currentTime = 0;
       }
     }
@@ -276,7 +272,7 @@ const Stories = () => {
   // };
 
   useEffect(() => {
-    dispatch(getAllStories())
+    dispatch(getAllStories());
   }, [dispatch]);
 
   return (
@@ -331,14 +327,25 @@ const Stories = () => {
         ))}
       </div>
 
-      <Modal open={isCreateStoryModal} onOpenChange={setIsCreateStoryModal}>
-        <div className="w-full max-w-2xl">
-          <CreateMedia />
+      <Modal
+        openModal={isCreateStoryModal}
+        onClose={() => setIsCreateStoryModal(false)}
+        initialWidth="max-w-2xl"
+        initialHeight="h-auto"
+      >
+        <div ref={storiesModalRef} className="w-full max-w-2xl">
+          <CreateMedia type="story" />
         </div>
       </Modal>
 
-      <Modal open={showStoryModal} onOpenChange={setShowStoryModal}>
-        <div className="w-full h-full relative flex items-center justify-center">
+      <Modal
+        openModal={showStoryModal}
+        onClose={() => setShowStoryModal(false)}
+      >
+        <div
+          ref={storiesModalRef}
+          className="w-full h-full relative flex items-center justify-center"
+        >
           <div className="absolute top-0 left-0 right-0 z-10 flex space-x-1 p-3">
             {currentUserStories?.map((story, index) => (
               <div
@@ -550,30 +557,30 @@ const Stories = () => {
                   </div>
                 </div>
 
-                 {/* Replay Section */}
-              <div className="p-4 border-t border-gray-200 bg-black/50 ">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        addCommentToStory(currentStory?._id);
-                      }
-                    }}
-                    placeholder="Replay..."
-                    className="w-full px-4 py-2 rounded-full bg-white/20 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm text-sm border border-white/30"
-                  />
+                {/* Replay Section */}
+                <div className="p-4 border-t border-gray-200 bg-black/50 ">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          addCommentToStory(currentStory?._id);
+                        }
+                      }}
+                      placeholder="Replay..."
+                      className="w-full px-4 py-2 rounded-full bg-white/20 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm text-sm border border-white/30"
+                    />
 
-                  <button
-                    onClick={() => addCommentToStory(currentStory?._id)}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-200 transition-colors"
-                  >
-                    <Send size={20} />
-                  </button>
+                    <button
+                      onClick={() => addCommentToStory(currentStory?._id)}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-200 transition-colors"
+                    >
+                      <Send size={20} />
+                    </button>
+                  </div>
                 </div>
-              </div>
               </div>
             </div>
           )}
