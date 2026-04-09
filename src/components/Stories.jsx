@@ -17,11 +17,17 @@ import { useDispatch, useSelector } from "react-redux";
 import CreateMedia from "./CreateMedia.jsx";
 import Modal from "./Modal.jsx";
 import { getAllStories } from "../redux/slices/storiesSlice.js";
+import axios from "axios";
+import { axiosInstance } from "../lib/axios.js";
+import ProfileImage from "./ProfileImage.jsx";
+import CommentSection from "./CommentSection.jsx";
+import { timeAgo } from "../lib/timeAgo.js";
 
 const Stories = () => {
   const { user: currentUser } = useSelector((state) => state.user);
   const { stories } = useSelector((state) => state.stories);
   console.log("currentUser: ", currentUser);
+  console.log("Stories: ", stories);
   // const [stories, setStories] = useState([]);
 
   const dispatch = useDispatch();
@@ -144,8 +150,6 @@ const Stories = () => {
     setIsCreateStoryModal(true);
   };
 
-  const handleStoreView = () => {};
-
   const canGoPrevious = currentUserIndex > 0 || currentStoryIndex > 0;
   const canGoNext = !isLastStoryOfLastUser;
 
@@ -258,9 +262,76 @@ const Stories = () => {
 
   const commentModal = () => {
     setShowCommentModal(true);
+    setIsPlaying(false);
+
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
   };
 
-  const addCommentToStory = () => {};
+  const addCommentToStory = async (storyId) => {
+    try {
+      if (!newComment.trim()) return;
+
+      const { data } = await axiosInstance.post(`/story/${storyId}/comment`, {
+        text: newComment,
+      });
+      if (data?.success) {
+        setNewComment("");
+        dispatch(getAllStories());
+      }
+    } catch (error) {
+      console.log("Error on Add comment to story: ", error);
+    }
+  };
+
+  //Whenever user click outside the box modal will be closed
+  useEffect(() => {
+    const handleClickOutSide = (e) => {
+      if (
+        storiesModalRef.current &&
+        !storiesModalRef.current.contains(e.target)
+      ) {
+        setIsCreateStoryModal(false);
+        setShowViewStoryModal(false);
+        setShowCommentModal(false);
+      }
+    };
+    if (showStoryModal) {
+      document.addEventListener("mousedown", handleClickOutSide);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutSide);
+    };
+  }, [showStoryModal]);
+
+  useEffect(() => {
+    if (showCommentsModal || showViewStoryModal) {
+      if (currentStory?.mediaType === "video") {
+        const video = videoRef.current;
+        if (video) {
+          video?.pause();
+        }
+      }
+    } else {
+      if (isPlaying) {
+        if (currentStory?.mediaType === "video") {
+          const video = videoRef.current;
+          if (video) {
+            video?.play().catch((error) => {
+              console.log("Video Resume Failed: ", error);
+            });
+          }
+        }
+      }
+    }
+  }, [
+    showCommentsModal,
+    currentStory?.mediaType,
+    isPlaying,
+    showViewStoryModal,
+  ]);
 
   // const getAllStories = async () => {
   //   try {
@@ -274,6 +345,14 @@ const Stories = () => {
   useEffect(() => {
     dispatch(getAllStories());
   }, [dispatch]);
+
+  const handleStoreView = async (storyId) => {
+    try {
+      await axiosInstance.put(`/story/${storyId}/view`);
+    } catch (error) {
+      console.log("Story Viewing Error: ", error);
+    }
+  };
 
   return (
     <div className="flex items-center overflow-x-auto p-2 space-x-4 no-scrollbar">
@@ -369,19 +448,13 @@ const Stories = () => {
           {/* HEADER */}
           <div className="absolute top-8 left-0 right-0 z-10 flex justify-between items-center px-4">
             <div className="flex items-center space-x-3">
-              <img
-                src={currentStoryUser?.profileImage || ""}
-                alt=""
-                className="w-8 h-8 rounded-full border border-gray-300"
-              />
-              {/* <ProfileImage user={currentStoryUser} /> */}
+              <ProfileImage user={currentStoryUser} />
               <div className="flex flex-col">
                 <span className="text-gray-200 font-semibold text-sm">
                   {currentStoryUser?.username}
                 </span>
                 <span className="text-gray-300 text-xs">
-                  12hrs ago
-                  {/* {timeAgo(currentStory?.createdAt)} */}
+                  {timeAgo(currentStory?.createdAt)}
                 </span>
               </div>
             </div>
@@ -404,7 +477,7 @@ const Stories = () => {
 
               {currentStoryUser?._id === currentUser?._id && (
                 <button
-                  onClick={handleMediaVolume}
+                  onClick={() => setShowViewStoryModal(true)}
                   className="text-white hover:opacity-80 transition-opacity p-2 bg-black/50 rounded-full"
                 >
                   <Eye size={20} />
@@ -475,10 +548,14 @@ const Stories = () => {
               <div className="flex items-center space-x-6">
                 <div className="relative flex flex-col items-center">
                   <HandHeart size={20} className="text-white hover:scale-110" />
-                  {/* {currentStory?.likes.length > 0 && <span className="absolute -top-4 text-xs text-white font-medium bg-red-500 rounded-full min-h-5 h-5 flex items-center justify-center px-1">{currentStory.likes.length || 0}</span>} */}
-                  <span className="absolute -top-4 text-xs text-white font-medium bg-red-500 rounded-full min-h-5 h-5 flex items-center justify-center px-2">
+                  {currentStory?.likes.length > 0 && (
+                    <span className="absolute -top-4 text-xs text-white font-medium bg-red-500 rounded-full min-h-5 h-5 flex items-center justify-center px-1.5 py-1">
+                      {currentStory.likes.length || 0}
+                    </span>
+                  )}
+                  {/* <span className="absolute -top-4 text-xs text-white font-medium bg-red-500 rounded-full min-h-5 h-5 flex items-center justify-center px-2">
                     1
-                  </span>
+                  </span> */}
                 </div>
                 {/* COmment Option */}
                 <button
@@ -489,10 +566,14 @@ const Stories = () => {
                     size={20}
                     className="text-white hover:scale-110"
                   />
-                  {/* {currentStory?.comments.length > 0 && <span className="absolute -top-4 text-xs text-white font-medium bg-red-500 rounded-full min-h-5 h-5 flex items-center justify-center px-1">{currentStory.comments.length || 0}</span>} */}
-                  <span className="absolute -top-4 text-xs text-white font-medium bg-red-500 rounded-full min-h-5 h-5 flex items-center justify-center px-2">
+                  {currentStory?.comments.length > 0 && (
+                    <span className="absolute -top-4 text-xs text-white font-medium bg-red-500 rounded-full min-h-5 h-5 flex items-center justify-center px-1.5 py-1">
+                      {currentStory.comments.length || 0}
+                    </span>
+                  )}
+                  {/* <span className="absolute -top-4 text-xs text-white font-medium bg-red-500 rounded-full min-h-5 h-5 flex items-center justify-center px-2">
                     1
-                  </span>
+                  </span> */}
                 </button>
               </div>
               {/* Replay Section */}
@@ -550,11 +631,7 @@ const Stories = () => {
 
                 {/* Comment List */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
-                  <div className="flex flex-col gap-4 text-white">
-                    <div>Hiiiii</div>
-                    <div>Hello John</div>
-                    <div>Wow. Nice Photo</div>
-                  </div>
+                  <CommentSection comments={currentStory?.comments} />
                 </div>
 
                 {/* Replay Section */}
@@ -580,6 +657,41 @@ const Stories = () => {
                       <Send size={20} />
                     </button>
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* View Story Modal */}
+          {showViewStoryModal && currentStory && (
+            <div
+              className="fixed inset-0 w-full z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
+              onClick={() => {
+                setShowViewStoryModal(false);
+              }}
+            >
+              <div
+                className="bg-black/50 rounded-t-2xl w-full max-w-lg max-h-[50vh] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-200">
+                    Viewers ({currentStory?.viewers?.length || 0})
+                  </h3>
+                  <button
+                    onClick={() => setShowViewStoryModal(false)}
+                    className="p-2 text-white hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <X size={20} className="text-gray-600" />
+                  </button>
+                </div>
+
+                {/* Viewers List */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+                  {currentStory?.viewers.map((u) => (
+                    <ProfileImage key={u?._id} user={u} username />
+                  ))}
                 </div>
               </div>
             </div>
