@@ -5,10 +5,11 @@ import toast from "react-hot-toast";
 // Initial State
 const initialState = {
   user: null, // Stores logged-in user data
+  profileUser: null,
   loading: false, // Tracks API request status
   error: null, // Stores error messages
   isAuthenticated: false,
-  setSavedPosts: null //
+  setSavedPosts: null, //
 };
 
 // Slice Definition
@@ -28,13 +29,18 @@ export const userSlice = createSlice({
       state.error = null; // clear error when user is successfully set
     },
 
+    setProfileUser: (state, action) => {
+      state.profileUser = action.payload;
+      state.isAuthenticated = true;
+    },
+
     // Set error message and reset authentication
     setError: (state, action) => {
       state.error = action.payload;
       state.isAuthenticated = false;
     },
 
-    // Set user saved post data 
+    // Set user saved post data
     setSavedPosts: (state, action) => {
       if (state.user) state.user.savedPosts = action.payload;
     },
@@ -49,7 +55,14 @@ export const userSlice = createSlice({
 });
 
 // Export actions
-export const { setLoading, setUser, setSavedPosts, setError, logout } = userSlice.actions;
+export const {
+  setLoading,
+  setUser,
+  setSavedPosts,
+  setProfileUser,
+  setError,
+  logout,
+} = userSlice.actions;
 // Export reducer
 export default userSlice.reducer;
 
@@ -161,6 +174,24 @@ export const updateProfileUser = (userData) => async (dispatch) => {
       setError(error?.response?.data?.message || "Profile Update Failed"),
     );
     toast.error(error?.response?.data?.message || "Profile Update Failed");
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
+//Get User By Id
+export const getUserById = (id) => async (dispatch) => {
+  dispatch(setLoading(true));
+  try {
+    const { data } = await axiosInstance.get(`/user/${id}`);
+    if (data?.success) {
+      dispatch(setProfileUser(data?.user));
+    }
+  } catch (error) {
+    dispatch(
+      setError(error?.response?.data?.message || "Get Profile By Id  Failed."),
+    );
+    toast.error(error?.response?.data?.message || "Get Profile By Id  Failed.");
   } finally {
     dispatch(setLoading(false));
   }

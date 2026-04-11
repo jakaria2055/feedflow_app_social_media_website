@@ -125,7 +125,7 @@ const PostCard = ({ post, currentUser }) => {
           <ProfileImage user={post?.user} username />
           <div>
             <FollowButton
-              targetId={post?.user?._id}
+              targetUserId={post?.user?._id}
               currentUser={currentUser}
             />
           </div>
