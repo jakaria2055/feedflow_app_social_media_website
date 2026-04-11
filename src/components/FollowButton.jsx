@@ -1,9 +1,11 @@
-import React from 'react'
+import React from "react";
 
 const FollowButton = () => {
   return (
-    <div>FollowButton</div>
-  )
-}
+    <div>
+      <button className="py-2 px-3 text-blue-500">Follow</button>
+    </div>
+  );
+};
 
-export default FollowButton
+export default FollowButton;

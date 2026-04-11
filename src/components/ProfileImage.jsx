@@ -28,7 +28,7 @@ const ProfileImage = ({ user, username = false, className }) => {
         )}
       </div>
 
-      {username && <Link to={`/profile/${user?._id}`} className="font-semibold text-sm">{user?.username}</Link>}
+      {username && <Link to={`/profile/${user?._id}`} className="font-semibold text-sm text-white">{user?.username}</Link>}
     </div>
   );
 };

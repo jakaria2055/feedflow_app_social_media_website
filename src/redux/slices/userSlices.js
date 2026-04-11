@@ -4,10 +4,11 @@ import toast from "react-hot-toast";
 
 // Initial State
 const initialState = {
-  user: null,            // Stores logged-in user data
-  loading: false,        // Tracks API request status
-  error: null,           // Stores error messages
-  isAuthenticated: false // Tracks authentication status
+  user: null, // Stores logged-in user data
+  loading: false, // Tracks API request status
+  error: null, // Stores error messages
+  isAuthenticated: false,
+  setSavedPosts: null //
 };
 
 // Slice Definition
@@ -33,6 +34,11 @@ export const userSlice = createSlice({
       state.isAuthenticated = false;
     },
 
+    // Set user saved post data 
+    setSavedPosts: (state, action) => {
+      if (state.user) state.user.savedPosts = action.payload;
+    },
+
     // Clear user data on logout
     logout: (state) => {
       state.user = null;
@@ -43,12 +49,9 @@ export const userSlice = createSlice({
 });
 
 // Export actions
-export const { setLoading, setUser, setError, logout } = userSlice.actions;
+export const { setLoading, setUser, setSavedPosts, setError, logout } = userSlice.actions;
 // Export reducer
 export default userSlice.reducer;
-
-
-
 
 // ==============================
 // Async Thunks (API Calls)
@@ -134,9 +137,11 @@ export const updateProfileImage = (formData) => async (dispatch) => {
     }
   } catch (error) {
     dispatch(
-      setError(error?.response?.data?.message || "Profile Image Upload Failed")
+      setError(error?.response?.data?.message || "Profile Image Upload Failed"),
     );
-    toast.error(error?.response?.data?.message || "Profile Image Upload Failed");
+    toast.error(
+      error?.response?.data?.message || "Profile Image Upload Failed",
+    );
   } finally {
     dispatch(setLoading(false));
   }
@@ -152,13 +157,11 @@ export const updateProfileUser = (userData) => async (dispatch) => {
       toast.success(data.message || "Profile Updated Successfully.");
     }
   } catch (error) {
-    dispatch(setError(error?.response?.data?.message || "Profile Update Failed"));
+    dispatch(
+      setError(error?.response?.data?.message || "Profile Update Failed"),
+    );
     toast.error(error?.response?.data?.message || "Profile Update Failed");
   } finally {
     dispatch(setLoading(false));
   }
 };
-
-
-
-
