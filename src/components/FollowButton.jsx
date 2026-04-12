@@ -41,7 +41,7 @@ const FollowButton = ({ targetUserId, currentUser }) => {
     <button
       onClick={handleFollowToggle}
       disabled={loading}
-      className="py-2 px-3 text-blue-500"
+      className="py-2 px-3 text-blue-500 cursor-pointer"
     >
       {isFollowing ? "Unfollow" : "Follow"}
     </button>
