@@ -9,6 +9,7 @@ import Market from "./pages/Market.jsx";
 import Explore from "./pages/Explore.jsx";
 import Reels from "./pages/Reels.jsx";
 import Message from "./pages/Message.jsx";
+import SuggestedUsersPage from "./pages/SuggestedUsersPage.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -25,6 +26,8 @@ function App() {
     { path: "/market", element: <Market /> },
     { path: "/profile/:id", element: <Profile /> },
     { path: "/login", element: <Login /> },
+
+     { path: "/suggested-users", element: <SuggestedUsersPage/> },
   ]);
   return <RouterProvider router={router} />;
 }
