@@ -15,7 +15,7 @@ const ProfileImage = ({ user, username = false, className }) => {
       >
         <img
           src={
-            user?.ProfileImage ||
+            user?.profileImage ||
             `https://placehold.co/150x150/000000/FFFFFF?text=${user?.username?.charAt(0).toUpperCase()}`
           }
           alt="profile"

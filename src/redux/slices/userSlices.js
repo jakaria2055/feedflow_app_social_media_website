@@ -228,21 +228,21 @@ export const followUserAction = (targetUserId) => async (dispatch, getState) => 
     if (data?.success) {
       toast.success(data?.message || "Followed Successfully");
       const state = getState();
-      const currentUser = state.user.user; // ✅ Fix: was state.user (missing .user)
+      const currentUser = state.user.user; //  Fix: was state.user (missing .user)
 
       if (currentUser && !currentUser.following.includes(targetUserId)) {
         dispatch(setUser({
           ...currentUser,
-          following: [...currentUser.following, targetUserId], // ✅ Fix: was state.user
+          following: [...currentUser.following, targetUserId], //  Fix: was state.user
         }));
       }
 
-      // ✅ Fix: was state.profileUser (missing .user), and state.updateProfileUser typo
+      //  Fix: was state.profileUser (missing .user), and state.updateProfileUser typo
       const profileUser = state.user.profileUser;
       if (profileUser && profileUser._id !== currentUser?._id) {
         dispatch(setProfileUser({
           ...profileUser,
-          followers: [...profileUser.followers, currentUser._id], // ✅ target gets a new follower
+          followers: [...profileUser.followers, currentUser._id], //  target gets a new follower
         }));
       }
     }

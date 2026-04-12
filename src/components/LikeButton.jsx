@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { axiosInstance } from "../lib/axios";
 import { setPosts } from "../redux/slices/postSlice";
 
-const LikeButton = ({ type = "post", item, size = 24 }) => {
+const LikeButton = ({ type = "post", item, size = 24, onToggle }) => {
   const dispatch = useDispatch();
   const { user: currentUser } = useSelector((state) => state.user);
   const { posts } = useSelector((state) => state.posts);
@@ -64,6 +64,8 @@ const LikeButton = ({ type = "post", item, size = 24 }) => {
           default:
             break;
         }
+
+        if (onToggle) onToggle(updatedItem);
       }
     } catch (error) {
       console.log("Failed to Like post: ", error);

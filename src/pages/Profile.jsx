@@ -1,10 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
-import { getUserById, logoutUser } from "../redux/slices/userSlices";
+import {
+  getUserById,
+  logoutUser,
+  setProfileUser,
+} from "../redux/slices/userSlices";
 import Sidebar from "../components/Sidebar";
 import ProfileImage from "../components/ProfileImage";
 import FollowButton from "../components/FollowButton";
+import LikeButton from "../components/LikeButton";
+import { MessageCircle } from "lucide-react";
+import Modal from "../components/Modal";
+import ProfileViewer from "../components/ProfileViewer";
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -14,7 +22,69 @@ const Profile = () => {
   const { profileUser, user: currentUser } = useSelector((state) => state.user);
   console.log("Profile of User: ", profileUser);
 
-  const openModal = () => {};
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState([]);
+  const [modalIndex, setModalIndex] = useState(0);
+  const modalVideoRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showIcon, setShowIcon] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+
+  const handleLikeUpdate = (updateItem) => {
+    const keyMap = { post: "post", reel: "reel", saved: "savedPosts" };
+    const key = keyMap[activeTab];
+
+    if (profileUser && profileUser[key]) {
+      const updateProfileUser = { ...profileUser };
+      updateProfileUser[key] = updateProfileUser[key].map((item) =>
+        item?._id === updateItem?._id ? updateItem : item,
+      );
+
+      dispatch(setProfileUser(updateProfileUser));
+    }
+
+    setModalContent((prev) =>
+      prev.map((item) => (item?._id === updateItem?._id ? updateItem : item)),
+    );
+  };
+
+  const getContentType = (tab) => {
+    switch (tab) {
+      case "reel":
+        return "reel";
+      case "saved":
+        return "post";
+      default:
+        return "post";
+    }
+  };
+
+  const openModal = (index, contentArray) => {
+    setIsModalOpen(true);
+    setModalIndex(index);
+    setModalContent(contentArray);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleModalVideoClick = () => {
+    const video = modalVideoRef.current;
+    if (!video) return;
+    if (isPlaying) video.pause();
+    else video.play();
+    setIsPlaying(!isPlaying);
+    setShowIcon(true);
+    setTimeout(() => setShowIcon(false), 600);
+  };
+
+  const handleModalMuteToggle = () => {
+    const video = modalVideoRef.current;
+    if (!video) return;
+    video.muted = !video.muted;
+    setIsMuted(video.muted);
+  };
 
   useEffect(() => {
     dispatch(getUserById(id));
@@ -40,11 +110,36 @@ const Profile = () => {
         onClick={() => openModal(i, content)}
         className="relative h-72 w-full aspect-square overflow-hidden group cursor-pointer"
       >
-        <img
-          src={item?.mediaUrl}
-          alt={item?.caption || "image"}
-          className="w-full h-full object-contain"
-        />
+        {item?.mediaType === "image" ? (
+          <img
+            src={item?.mediaUrl}
+            alt={item?.caption || "image"}
+            className="w-full h-full object-contain"
+          />
+        ) : (
+          <video loop playsInline muted className="w-full h-full object-cover">
+            <source src={item?.mediaUrl} type="video/mp4" />
+          </video>
+        )}
+
+        {/* OverLay */}
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <div className="flex gap-6 text-white font-semibold text-lg">
+            <div className="flex items-center gap-2">
+              <LikeButton
+                type={getContentType(activeTab)}
+                size={24}
+                item={item}
+                onToggle={handleLikeUpdate}
+              />
+              <span>{item?.likes?.length || 0}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MessageCircle size={24} strokeWidth={2} />
+              <span>{item?.comments?.length || 0}</span>
+            </div>
+          </div>
+        </div>
       </div>
     ));
   };
@@ -57,14 +152,14 @@ const Profile = () => {
         <header className="flex md:max-w-2xl m-auto flex-col md:flex-row items-center md:justify-around md:space-x-10 mb-8 text-center md:text-left">
           <ProfileImage user={profileUser} className="w-24 h-24" />
 
-          <div>
+          <div className="">
             <div className="flex flex-col md:flex-row flex-wrap justify-center md:justify-between items-center gap-4 mb-4 text-center md:text-left">
               <h1 className="text-lg md:text-xl font-semibold">
                 {profileUser?.username}
               </h1>
               <div className="flex flex-wrap justify-center md:justify-end items-center gap-3">
                 {profileUser?._id === currentUser?._id ? (
-                  <button className="bg-linear-to-r from-indigo-500 to-pink-500 py-1 px-4 rounded-b-md font-semibold text-sm md:text-base">
+                  <button className="bg-linear-to-r from-indigo-500 to-pink-500 py-1 px-4 rounded-md font-semibold text-sm md:text-base">
                     <Link to={`/account/edit`}>Edit Profile</Link>
                   </button>
                 ) : (
@@ -77,12 +172,12 @@ const Profile = () => {
                 {profileUser?._id === currentUser?._id ? (
                   <button
                     onClick={() => dispatch(logoutUser())}
-                    className="bg-linear-to-r from-indigo-500 to-pink-500 py-1 px-4 rounded-b-md font-semibold text-sm md:text-base"
+                    className="bg-linear-to-r from-indigo-500 to-pink-500 py-1 px-4 rounded-md font-semibold text-sm md:text-base"
                   >
                     Logout
                   </button>
                 ) : (
-                  <button className="bg-linear-to-r from-indigo-500 to-pink-500 py-1 px-4 rounded-b-md font-semibold text-sm md:text-base">
+                  <button className="bg-linear-to-r from-indigo-500 to-pink-500 py-1 px-4 rounded-md font-semibold text-sm md:text-base">
                     Message
                   </button>
                 )}
@@ -140,10 +235,32 @@ const Profile = () => {
         </div>
 
         {/* Grid Content */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 mt-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mt-4">
           {renderGridContent()}
         </div>
       </main>
+
+      {/* Modal Viewer */}
+      <Modal
+        openModal={isModalOpen}
+        onClose={handleCloseModal}
+        initialWidth="max-w-5xl"
+        showCloseBtn
+      >
+        <ProfileViewer
+          handleModalVideoClick={handleModalVideoClick}
+          handleModalMuteToggle={handleModalMuteToggle}
+          modalVideoRef={modalVideoRef}
+          showIcon={showIcon}
+          isMuted={isMuted}
+          isPlaying={isPlaying}
+          startIndex={modalIndex}
+          content={modalContent}
+          activeTab={activeTab}
+          currentUser={profileUser}
+          type={getContentType(activeTab)}
+        />
+      </Modal>
     </div>
   );
 };
