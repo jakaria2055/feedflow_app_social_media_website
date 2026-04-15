@@ -22,6 +22,7 @@ import { axiosInstance } from "../lib/axios.js";
 import ProfileImage from "./ProfileImage.jsx";
 import CommentSection from "./CommentSection.jsx";
 import { timeAgo } from "../lib/timeAgo.js";
+import LikeButton from "./LikeButton.jsx";
 
 const Stories = () => {
   const { user: currentUser } = useSelector((state) => state.user);
@@ -54,6 +55,7 @@ const Stories = () => {
   const currentUserStories = stories[currentUserIndex]?.stories || [];
   const currentStory = currentUserStories[currentStoryIndex];
   const currentStoryUser = stories[currentUserIndex]?.user;
+
 
   const isLastStoryOfLastUser =
     currentUserIndex === stories.length - 1 &&
@@ -348,7 +350,7 @@ const Stories = () => {
 
   const handleStoreView = async (storyId) => {
     try {
-      await axiosInstance.put(`/story/${storyId}/view`);
+      await axiosInstance.get(`/story/${storyId}/view`);
     } catch (error) {
       console.log("Story Viewing Error: ", error);
     }
@@ -547,7 +549,9 @@ const Stories = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-6">
                 <div className="relative flex flex-col items-center">
-                  <HandHeart size={20} className="text-white hover:scale-110" />
+                  {/* <HandHeart size={20} className="text-white hover:scale-110" /> */}
+                  <LikeButton type="story" item={currentStory}/>
+
                   {currentStory?.likes.length > 0 && (
                     <span className="absolute -top-4 text-xs text-white font-medium bg-red-500 rounded-full min-h-5 h-5 flex items-center justify-center px-1.5 py-1">
                       {currentStory.likes.length || 0}

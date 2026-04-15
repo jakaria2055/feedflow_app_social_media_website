@@ -1,13 +1,15 @@
-import { HeartHandshake } from "lucide-react";
+import { HandHeart, HeartHandshake } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { axiosInstance } from "../lib/axios";
 import { setPosts } from "../redux/slices/postSlice";
+import { updateLikeStory } from "../redux/slices/storiesSlice";
 
 const LikeButton = ({ type = "post", item, size = 24, onToggle }) => {
   const dispatch = useDispatch();
   const { user: currentUser } = useSelector((state) => state.user);
   const { posts } = useSelector((state) => state.posts);
+  const { stories } = useSelector((state) => state.stories);
 
   console.log("Post From Like Page: ", posts);
 
@@ -61,6 +63,14 @@ const LikeButton = ({ type = "post", item, size = 24, onToggle }) => {
               ),
             );
             break;
+          case "story":
+            dispatch(
+              updateLikeStory({
+                storyId: updatedItem?._id,
+                userId: currentUser?._id,
+              }),
+            );
+            break;
           default:
             break;
         }
@@ -79,9 +89,9 @@ const LikeButton = ({ type = "post", item, size = 24, onToggle }) => {
       className="transition-transform hover:scale-110 active:scale-95"
     >
       {isLiked ? (
-        <HeartHandshake size={size} className="text-pink-700" />
+        <HandHeart size={size} className="text-pink-700" />
       ) : (
-        <HeartHandshake size={size} className="text-white" />
+        <HandHeart size={size} className="text-white" />
       )}
     </button>
   );

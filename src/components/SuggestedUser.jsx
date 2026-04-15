@@ -3,37 +3,44 @@ import { axiosInstance } from "../lib/axios";
 import { Link, useLocation } from "react-router-dom";
 import ProfileImage from "./ProfileImage";
 import FollowButton from "./FollowButton";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchSuggestedUsers } from "../redux/slices/userSlices";
 
 const SuggestedUser = () => {
-  const { user: currentUser } = useSelector((state) => state.user);
-  const [suggestedUsers, setSuggestedUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const {
+    user: currentUser,
+    suggestedUsers,
+    loading,
+    error,
+  } = useSelector((state) => state.user);
+  // const [suggestedUsers, setSuggestedUsers] = useState([]);
+  // const [loading, setLoading] = useState(false);
+  // const [error, setError] = useState(null);
+  const dispatch = useDispatch();
 
   const location = useLocation();
   const path = location.pathname.startsWith("/suggested-users");
 
-  const fetchSuggestedUsers = async () => {
-    setLoading(true);
-    try {
-      const { data } = await axiosInstance.get(`/user/suggested/users`);
-      if (data?.success) {
-        setSuggestedUsers(data?.users);
-      } else {
-        setError(data.message || "Failed to fetch suggested USers");
-      }
-    } catch (error) {
-      console.log("Error: ", error);
-      setError(error.message || "Failed to fetch suggested USers");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const fetchSuggestedUsers = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const { data } = await axiosInstance.get(`/user/suggested/users`);
+  //     if (data?.success) {
+  //       setSuggestedUsers(data?.users);
+  //     } else {
+  //       setError(data.message || "Failed to fetch suggested USers");
+  //     }
+  //   } catch (error) {
+  //     console.log("Error: ", error);
+  //     setError(error.message || "Failed to fetch suggested USers");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
-    fetchSuggestedUsers();
-  }, []);
+    dispatch(fetchSuggestedUsers());
+  }, [dispatch]);
 
   if (loading) {
     return (

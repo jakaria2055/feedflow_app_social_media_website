@@ -10,6 +10,7 @@ import Explore from "./pages/Explore.jsx";
 import Reels from "./pages/Reels.jsx";
 import Message from "./pages/Message.jsx";
 import SuggestedUsersPage from "./pages/SuggestedUsersPage.jsx";
+import AccountEdit from "./pages/AccountEdit.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -25,6 +26,7 @@ function App() {
     { path: "/chats", element: <Message /> },
     { path: "/market", element: <Market /> },
     { path: "/profile/:id", element: <Profile /> },
+    { path: "/account/edit", element: <AccountEdit /> },
     { path: "/login", element: <Login /> },
 
      { path: "/suggested-users", element: <SuggestedUsersPage/> },

@@ -10,7 +10,15 @@ import Sidebar from "../components/Sidebar";
 import ProfileImage from "../components/ProfileImage";
 import FollowButton from "../components/FollowButton";
 import LikeButton from "../components/LikeButton";
-import { MessageCircle } from "lucide-react";
+import {
+  MessageCircle,
+  User,
+  Phone,
+  Globe,
+  Briefcase,
+  GraduationCap,
+  Heart,
+} from "lucide-react";
 import Modal from "../components/Modal";
 import ProfileViewer from "../components/ProfileViewer";
 
@@ -207,12 +215,70 @@ const Profile = () => {
             </div>
 
             {/* Bio */}
-            <div className="mt-5">
-              <h2 className="font-semibold">{profileUser?.username}</h2>
-              <p className="text-sm text-gray-400">
+            <div className="mt-5 space-y-4 text-center md:text-left">
+              {/* Username */}
+              <h2 className="font-semibold text-lg flex items-center justify-center md:justify-start gap-2">
+                <User size={18} className="text-gray-400" />
+                {profileUser?.fullname || profileUser?.username}
+              </h2>
+
+              {/* Bio */}
+              <p className="text-sm text-gray-400 max-w-md mx-auto md:mx-0">
                 {profileUser?.bio ||
-                  `Hii guys this is ${profileUser?.username}`}
+                  `Hi guys, this is ${profileUser?.username}`}
               </p>
+
+              {/* Info Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 text-sm text-gray-300">
+                {profileUser?.gender && (
+                  <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
+                    <User size={16} className="text-gray-400" />
+                    <span>{profileUser.gender}</span>
+                  </div>
+                )}
+
+                {profileUser?.phone && (
+                  <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
+                    <Phone size={16} className="text-gray-400" />
+                    <span>{profileUser.phone}</span>
+                  </div>
+                )}
+
+                {profileUser?.status && (
+                  <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
+                    <Heart size={16} className="text-gray-400" />
+                    <span className="capitalize">{profileUser.status}</span>
+                  </div>
+                )}
+
+                {profileUser?.education && (
+                  <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
+                    <GraduationCap size={16} className="text-gray-400" />
+                    <span>{profileUser.education}</span>
+                  </div>
+                )}
+
+                {profileUser?.job && (
+                  <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
+                    <Briefcase size={16} className="text-gray-400" />
+                    <span>{profileUser.job}</span>
+                  </div>
+                )}
+
+                {profileUser?.website && (
+                  <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg col-span-full">
+                    <Globe size={16} className="text-gray-400" />
+                    <a
+                      href={profileUser.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline text-blue-400 truncate"
+                    >
+                      {profileUser.website}
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </header>

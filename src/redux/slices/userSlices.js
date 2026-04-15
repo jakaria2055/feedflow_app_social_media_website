@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 const initialState = {
   user: null, // Stores logged-in user data
   profileUser: null,
+  suggestedUsers: [],
   loading: false, // Tracks API request status
   error: null, // Stores error messages
   isAuthenticated: false,
@@ -33,6 +34,10 @@ export const userSlice = createSlice({
     setProfileUser: (state, action) => {
       state.profileUser = action.payload;
       state.isAuthenticated = true;
+    },
+
+    setSuggestedUser: (state, action) => {
+      state.suggestedUsers = action.payload;
     },
 
     updateFollowers: (state, action) => {
@@ -82,6 +87,7 @@ export const {
   setFollowers,
   setFollowing,
   setError,
+  setSuggestedUser,
   logout,
 } = userSlice.actions;
 // Export reducer
@@ -219,81 +225,95 @@ export const getUserById = (id) => async (dispatch) => {
 };
 
 //Follow User
-export const followUserAction = (targetUserId) => async (dispatch, getState) => {
-  dispatch(setLoading(true));
-  try {
-    const { data } = await axiosInstance.post(`/user/follow`, {
-      targetId: targetUserId,
-    });
-    if (data?.success) {
-      toast.success(data?.message || "Followed Successfully");
-      const state = getState();
-      const currentUser = state.user.user; //  Fix: was state.user (missing .user)
+export const followUserAction =
+  (targetUserId) => async (dispatch, getState) => {
+    dispatch(setLoading(true));
+    try {
+      const { data } = await axiosInstance.post(`/user/follow`, {
+        targetId: targetUserId,
+      });
+      if (data?.success) {
+        toast.success(data?.message || "Followed Successfully");
+        const state = getState();
+        const currentUser = state.user.user; //  Fix: was state.user (missing .user)
 
-      if (currentUser && !currentUser.following.includes(targetUserId)) {
-        dispatch(setUser({
-          ...currentUser,
-          following: [...currentUser.following, targetUserId], //  Fix: was state.user
-        }));
-      }
+        if (currentUser && !currentUser.following.includes(targetUserId)) {
+          dispatch(
+            setUser({
+              ...currentUser,
+              following: [...currentUser.following, targetUserId], //  Fix: was state.user
+            }),
+          );
+        }
 
-      //  Fix: was state.profileUser (missing .user), and state.updateProfileUser typo
-      const profileUser = state.user.profileUser;
-      if (profileUser && profileUser._id !== currentUser?._id) {
-        dispatch(setProfileUser({
-          ...profileUser,
-          followers: [...profileUser.followers, currentUser._id], //  target gets a new follower
-        }));
+        //  Fix: was state.profileUser (missing .user), and state.updateProfileUser typo
+        const profileUser = state.user.profileUser;
+        if (profileUser && profileUser._id !== currentUser?._id) {
+          dispatch(
+            setProfileUser({
+              ...profileUser,
+              followers: [...profileUser.followers, currentUser._id], //  target gets a new follower
+            }),
+          );
+        }
       }
+    } catch (error) {
+      dispatch(
+        setError(error?.response?.data?.message || "Failed to follow user."),
+      );
+      toast.error(error?.response?.data?.message || "Failed to follow user.");
+    } finally {
+      dispatch(setLoading(false));
     }
-  } catch (error) {
-    dispatch(setError(error?.response?.data?.message || "Failed to follow user."));
-    toast.error(error?.response?.data?.message || "Failed to follow user.");
-  } finally {
-    dispatch(setLoading(false));
-  }
-};
+  };
 
 //UnFollow User
-export const unfollowUserAction = (targetUserId) => async (dispatch, getState) => {
-  dispatch(setLoading(true));
-  try {
-    const { data } = await axiosInstance.post(`/user/unfollow`, {
-      targetId: targetUserId,
-    });
-    if (data?.success) {
-      toast.success(data?.message || "UnFollowed Successfully");
-      const state = getState();
-      const currentUser = state.user.user; // ✅ Fix: was state.user (missing .user)
+export const unfollowUserAction =
+  (targetUserId) => async (dispatch, getState) => {
+    dispatch(setLoading(true));
+    try {
+      const { data } = await axiosInstance.post(`/user/unfollow`, {
+        targetId: targetUserId,
+      });
+      if (data?.success) {
+        toast.success(data?.message || "UnFollowed Successfully");
+        const state = getState();
+        const currentUser = state.user.user; // ✅ Fix: was state.user (missing .user)
 
-      // ✅ Fix: condition was wrong — was checking !includes but should filter when IS following
-      if (currentUser) {
-        dispatch(setUser({
-          ...currentUser,
-          following: currentUser.following.filter(
-            (id) => id.toString() !== targetUserId.toString(),
-          ),
-        }));
-      }
+        // ✅ Fix: condition was wrong — was checking !includes but should filter when IS following
+        if (currentUser) {
+          dispatch(
+            setUser({
+              ...currentUser,
+              following: currentUser.following.filter(
+                (id) => id.toString() !== targetUserId.toString(),
+              ),
+            }),
+          );
+        }
 
-      // ✅ Fix: was state.profileUser (missing .user)
-      const profileUser = state.user.profileUser;
-      if (profileUser && profileUser._id !== currentUser?._id) {
-        dispatch(setProfileUser({
-          ...profileUser,
-          followers: profileUser.followers.filter(
-            (id) => id.toString() !== currentUser._id.toString(),
-          ),
-        }));
+        // ✅ Fix: was state.profileUser (missing .user)
+        const profileUser = state.user.profileUser;
+        if (profileUser && profileUser._id !== currentUser?._id) {
+          dispatch(
+            setProfileUser({
+              ...profileUser,
+              followers: profileUser.followers.filter(
+                (id) => id.toString() !== currentUser._id.toString(),
+              ),
+            }),
+          );
+        }
       }
+    } catch (error) {
+      dispatch(
+        setError(error?.response?.data?.message || "Failed to unfollow user."),
+      );
+      toast.error(error?.response?.data?.message || "Failed to unfollow user.");
+    } finally {
+      dispatch(setLoading(false));
     }
-  } catch (error) {
-    dispatch(setError(error?.response?.data?.message || "Failed to unfollow user."));
-    toast.error(error?.response?.data?.message || "Failed to unfollow user.");
-  } finally {
-    dispatch(setLoading(false));
-  }
-};
+  };
 
 //Get Followers
 export const fetchFollowers = (userId) => async (dispatch) => {
@@ -328,6 +348,24 @@ export const fetchFollowing = (userId) => async (dispatch) => {
       setError(error?.response?.data?.message || "Get Following  Failed."),
     );
     toast.error(error?.response?.data?.message || "Get Following Failed.");
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
+//Get Suggested User
+export const fetchSuggestedUsers = () => async (dispatch) => {
+  dispatch(setLoading(true));
+  try {
+    const { data } = await axiosInstance.get(`/user/suggested/users`);
+    if (data?.success) {
+      dispatch(setSuggestedUser(data?.users));
+    }
+  } catch (error) {
+    dispatch(
+      setError(error?.response?.data?.message || "Get Suggested User Failed."),
+    );
+    toast.error(error?.response?.data?.message || "Get Suggested User Failed.");
   } finally {
     dispatch(setLoading(false));
   }

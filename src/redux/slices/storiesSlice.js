@@ -1,13 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../lib/axios.js";
 
-
 // Initial State
 const initialState = {
-  stories: [],         
-  loading: false,        // Tracks API request status
-  error: null,           // Stores error messages
-
+  stories: [],
+  loading: false, // Tracks API request status
+  error: null, // Stores error messages
 };
 
 // Slice Definition
@@ -25,6 +23,25 @@ export const storiesSlice = createSlice({
       state.stories = action.payload;
     },
 
+    updateLikeStory: (state, action) => {
+      const { storyId, userId } = action.payload;
+      state.stories = state.stories.map((group) => ({
+        ...group,
+        stories: group.stories.map((story) => {
+          if (story?._id === storyId) {
+            const isLiked = story.likes.includes(userId);
+            return {
+              ...story,
+              likes: isLiked
+                ? story.likes.filter((id) => id !== userId)
+                : [...story.likes, userId],
+            };
+          }
+          return story;
+        }),
+      }));
+    },
+
     // Set error message and reset authentication
     setError: (state, action) => {
       state.error = action.payload;
@@ -33,17 +50,13 @@ export const storiesSlice = createSlice({
 });
 
 // Export actions
-export const { setLoading, setStories, setError } = storiesSlice.actions;
+export const { setLoading, setStories, setError, updateLikeStory  } = storiesSlice.actions;
 // Export reducer
 export default storiesSlice.reducer;
-
-
-
 
 // ==============================
 // Async Thunks (API Calls)
 // ==============================
-
 
 // Get current logged-in user profile
 export const getAllStories = () => async (dispatch) => {
@@ -59,12 +72,3 @@ export const getAllStories = () => async (dispatch) => {
     dispatch(setLoading(false));
   }
 };
-
-
-
-
-
-
-
-
-
