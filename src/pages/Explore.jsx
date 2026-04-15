@@ -11,134 +11,254 @@ import { Link } from "react-router-dom";
 import ProfileImage from "../components/ProfileImage";
 import { getAllPosts } from "../redux/slices/postSlice";
 import LikeButton from "../components/LikeButton";
+import ProfileViewer from "../components/ProfileViewer";
+import Modal from "../components/Modal";
 
 const Explore = () => {
   const {
     user: currentUser,
     suggestedUsers,
     loading,
-    error,
   } = useSelector((state) => state.user);
+
   const { posts } = useSelector((state) => state.posts);
-
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  const scrollRef = useRef(null);
-
-  const scroll = () => {};
-  const openModal = () => {};
 
   const dispatch = useDispatch();
 
+  // Scroll states
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  // Drag refs
+  const scrollRef = useRef(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeftStart = useRef(0);
+
+  // Scroll buttons
+  const scroll = (direction) => {
+    if (!scrollRef.current) return;
+    const scrollAmount = scrollRef.current.clientWidth / 2;
+
+    scrollRef.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
+  const checkScroll = () => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1);
+  };
+
+  // Mouse handlers
+  const handleMouseDown = (e) => {
+    isDragging.current = true;
+    startX.current = e.pageX - scrollRef.current.offsetLeft;
+    scrollLeftStart.current = scrollRef.current.scrollLeft;
+
+    scrollRef.current.classList.add("cursor-grabbing");
+  };
+
+  const handleMouseLeave = () => {
+    isDragging.current = false;
+    scrollRef.current.classList.remove("cursor-grabbing");
+  };
+
+  const handleMouseUp = () => {
+    isDragging.current = false;
+    scrollRef.current.classList.remove("cursor-grabbing");
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging.current) return; // ✅ FIXED
+
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.5;
+
+    scrollRef.current.scrollLeft = scrollLeftStart.current - walk;
+    checkScroll();
+  };
+
+  // Touch handlers
+  const handleTouchStart = (e) => {
+    isDragging.current = true;
+    startX.current = e.touches[0].pageX - scrollRef.current.offsetLeft;
+    scrollLeftStart.current = scrollRef.current.scrollLeft;
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging.current) return;
+
+    const x = e.touches[0].pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.5;
+
+    scrollRef.current.scrollLeft = scrollLeftStart.current - walk;
+    checkScroll();
+  };
+
+  const handleTouchEnd = () => {
+    isDragging.current = false;
+  };
+
+  // Init
   useEffect(() => {
     dispatch(fetchSuggestedUsers());
     dispatch(getAllPosts());
   }, [dispatch]);
 
+  useEffect(() => {
+    checkScroll();
+
+    const container = scrollRef.current;
+    if (container) {
+      container.addEventListener("scroll", checkScroll);
+      window.addEventListener("resize", checkScroll);
+    }
+
+    return () => {
+      if (container) container.removeEventListener("scroll", checkScroll);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, []);
+
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState([]);
+  const [modalIndex, setModalIndex] = useState(0);
+
+  const modalVideoRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showIcon, setShowIcon] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+
+  const openModal = (index, contentArray) => {
+    setModalContent(contentArray);
+    setModalIndex(index);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleModalVideoClick = () => {
+    const video = modalVideoRef.current;
+    if (!video) return;
+
+    if (isPlaying) video.pause();
+    else video.play();
+
+    setIsPlaying(!isPlaying);
+    setShowIcon(true);
+
+    setTimeout(() => setShowIcon(false), 600);
+  };
+
+  const handleModalMuteToggle = () => {
+    const video = modalVideoRef.current;
+    if (!video) return;
+
+    video.muted = !video.muted; // ✅ FIXED
+    setIsMuted(video.muted);
+  };
+
   return (
-    <div className="bg-black flex bg-opacity-95 text-white w-full min-h-screen">
+    <div className="bg-black flex text-white w-full min-h-screen">
       <Sidebar />
 
-      <main className="flex-1 p-5 w-full flex flex-col overflow-auto">
+      <main className="flex-1 p-5 flex flex-col overflow-auto">
         {loading ? (
           <p>Loading...</p>
         ) : (
           <div className="max-w-full">
-            {/* SUggested Users */}
+            {/* Suggested Users */}
             <div className="relative mb-6">
-              {/* Left Scroll Button */}
               <button
                 onClick={() => scroll("left")}
                 disabled={!canScrollLeft}
-                className={`absolute left-0 top-1/2 -translate-y-1/2 bg-gray-800/60 hover:bg-gray-700 text-white p-2 rounded-full z-10 md:p-3 transition-opacity ${!canScrollLeft ? "opacity-30 cursor-not-allowed" : ""}`}
+                className={`absolute left-0 top-1/2 -translate-y-1/2 bg-gray-800/60 hover:bg-gray-700 p-2 rounded-full z-10 ${
+                  !canScrollLeft && "opacity-30"
+                }`}
               >
                 <ArrowLeftFromLine size={20} />
               </button>
 
-              {/* Right Scroll Button */}
               <button
                 onClick={() => scroll("right")}
                 disabled={!canScrollRight}
-                className={`absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800/60 hover:bg-gray-700 text-white p-2 rounded-full z-10 md:p-3 transition-opacity ${!canScrollRight ? "opacity-30 cursor-not-allowed" : ""}`}
+                className={`absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800/60 hover:bg-gray-700 p-2 rounded-full z-10 ${
+                  !canScrollRight && "opacity-30"
+                }`}
               >
                 <ArrowRightFromLine size={20} />
               </button>
 
-              {/* Scrollbar User List */}
               <div
                 ref={scrollRef}
-                className="flex gap-4 px-4 md:px-8 py-2 overflow-x-auto no-scrollbar cursor-grab"
+                onMouseDown={handleMouseDown}
+                onMouseLeave={handleMouseLeave}
+                onMouseUp={handleMouseUp}
+                onMouseMove={handleMouseMove}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                className="flex gap-4 px-4 py-2 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none"
               >
-                {suggestedUsers.length === 0 ? (
-                  <p className="text-gray-800">No users Found!</p>
-                ) : (
-                  suggestedUsers.map((user) => (
-                    <Link
-                      key={user?._id}
-                      to={`/profile/${user?._id}`}
-                      className="flex flex-col items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition min-w-20 md:min-w-25"
-                    >
-                      <ProfileImage
-                        user={user}
-                        className={
-                          "h-12 w-12 md:w-14 md:h-14 bg-linear-to-r from-pink-500/50 to-purple-500/50 shadow-pink-500/30"
-                        }
-                      />
-                      <span className="text-sm md:text-base text-white text-center truncate">
-                        {user?.username}
-                      </span>
-                    </Link>
-                  ))
-                )}
+                {suggestedUsers?.map((user) => (
+                  <Link
+                    key={user._id}
+                    to={`/profile/${user._id}`}
+                    className="flex flex-col items-center gap-2 p-2 rounded-lg hover:bg-gray-700 min-w-20"
+                  >
+                    <ProfileImage user={user} />
+                    <span className="text-sm">{user.username}</span>
+                  </Link>
+                ))}
               </div>
             </div>
 
-            {/* Suggested Post Grid */}
+            {/* Posts */}
             <div>
-              <h2 className="text-lg font-semibold text-white mb-5">
+              <h2 className="text-lg font-semibold mb-5">
                 Trending Posts...
               </h2>
+
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {posts?.map((post, i) => (
                   <div
-                    key={post?._id}
-                    onClick={() => openModal(i, post)}
-                    className="relative h-56 rounded-lg overflow-hidden group cursor-pointer w-full"
+                    key={post._id}
+                    onClick={() => openModal(i, posts)}
+                    className="relative h-56 rounded-lg overflow-hidden group cursor-pointer"
                   >
-                    {post?.mediaType === "image" ? (
+                    {post.mediaType === "image" ? (
                       <img
-                        src={post?.mediaUrl}
-                        alt={post?.caption || "image"}
+                        src={post.mediaUrl}
                         className="w-full h-full object-cover"
                       />
                     ) : (
                       <video
                         loop
-                        playsInline
                         muted
-                        className="w-full h-full object-cover  rounded-lg group-hover:scale-105 transition-transform"
+                        className="w-full h-full object-cover"
                       >
-                        <source src={post?.mediaUrl} type="video/mp4" />
+                        <source src={post.mediaUrl} />
                       </video>
                     )}
 
-                    {/* OverLay */}
-                    <div className="absolute px-4 bottom-0 left-0 right-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 py-2 flex items-center justify-between">
-                    
-                        <div className="flex items-center gap-1 text-white">
-                          <LikeButton
-                            type={"post"}
-                            size={24}
-                            item={post}
-                          />
-                          <span className="text-sm">{post?.likes?.length || 0}</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-white">
-                          <MessageCircle size={18} strokeWidth={2} />
-                          <span>{post?.comments?.length || 0}</span>
-                        </div>
-                    
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 opacity-0 group-hover:opacity-100 p-2 flex justify-between">
+                      <div className="flex items-center gap-1">
+                        <LikeButton item={post} />
+                        {post.likes.length}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <MessageCircle size={16} />
+                        {post.comments.length}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -147,6 +267,22 @@ const Explore = () => {
           </div>
         )}
       </main>
+
+      {/* Modal */}
+      <Modal openModal={isModalOpen} onClose={handleCloseModal}>
+        <ProfileViewer
+          handleModalVideoClick={handleModalVideoClick}
+          handleModalMuteToggle={handleModalMuteToggle}
+          modalVideoRef={modalVideoRef}
+          showIcon={showIcon}
+          isMuted={isMuted}
+          isPlaying={isPlaying}
+          content={modalContent}
+          startIndex={modalIndex}
+          currentUser={currentUser}
+          type="post"
+        />
+      </Modal>
     </div>
   );
 };

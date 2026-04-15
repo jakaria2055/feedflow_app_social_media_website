@@ -11,8 +11,9 @@ import {
   Volume,
   VolumeX,
 } from "lucide-react";
+import { getAllReels } from "../redux/slices/reelSlice";
 
-const CreateMedia = ({ type = "post" }) => {
+const CreateMedia = ({ type = "post", onClose }) => {
   const [file, setFile] = useState(null);
   const [caption, setCaption] = useState("");
   const [currentType, setCurrentType] = useState(type);
@@ -45,7 +46,6 @@ const CreateMedia = ({ type = "post" }) => {
       setError(null);
     }
   };
-
 
   const handleFileChange = (e) => handleFileSelect(e.target.files[0]);
   const handleDragOver = (e) => {
@@ -94,7 +94,8 @@ const CreateMedia = ({ type = "post" }) => {
       });
 
       if (data.success) {
-        currentType === "story" ? dispatch(getAllStories()) : "";
+        currentType === "story" ? dispatch(getAllStories()) : dispatch(getAllReels());
+        onClose();
         setFile(null);
         setCaption("");
         setPreviewUrl(null);
@@ -191,11 +192,17 @@ const CreateMedia = ({ type = "post" }) => {
                 <div className=" absolute bottom-2 left-2 flex gap-2 bg-black/50 p-1 rounded">
                   <button
                     type="button"
-                    onClick={() =>
-                      isPlaying
-                        ? videoRef.current.pause()
-                        : videoRef.current.play()
-                    }
+                    onClick={() => {
+                      if (!videoRef.current) return;
+
+                      if (isPlaying) {
+                        videoRef.current.pause();
+                        setIsPlaying(false); //  important
+                      } else {
+                        videoRef.current.play();
+                        setIsPlaying(true); //  important
+                      }
+                    }}
                     className="text-white p-1"
                   >
                     {isPlaying ? <Pause size={20} /> : <Play size={20} />}
