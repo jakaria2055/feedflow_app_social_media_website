@@ -13,9 +13,7 @@ const SuggestedUser = () => {
     loading,
     error,
   } = useSelector((state) => state.user);
-  // const [suggestedUsers, setSuggestedUsers] = useState([]);
-  // const [loading, setLoading] = useState(false);
-  // const [error, setError] = useState(null);
+
   const dispatch = useDispatch();
 
   const location = useLocation();
