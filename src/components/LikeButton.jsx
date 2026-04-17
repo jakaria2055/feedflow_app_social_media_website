@@ -4,12 +4,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { axiosInstance } from "../lib/axios";
 import { setPosts } from "../redux/slices/postSlice";
 import { updateLikeStory } from "../redux/slices/storiesSlice";
+import { setReels } from "../redux/slices/reelSlice";
 
 const LikeButton = ({ type = "post", item, size = 24, onToggle }) => {
   const dispatch = useDispatch();
   const { user: currentUser } = useSelector((state) => state.user);
   const { posts } = useSelector((state) => state.posts);
   const { stories } = useSelector((state) => state.stories);
+  const { reels } = useSelector((state) => state.reels);
 
   console.log("Post From Like Page: ", posts);
 
@@ -69,6 +71,15 @@ const LikeButton = ({ type = "post", item, size = 24, onToggle }) => {
                 storyId: updatedItem?._id,
                 userId: currentUser?._id,
               }),
+            );
+            break;
+          case "reel":
+            dispatch(
+              setReels(
+                reels.map((r) =>
+                  r._id === updatedItem?._id ? updatedItem : r,
+                ),
+              ),
             );
             break;
           default:
