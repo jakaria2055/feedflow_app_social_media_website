@@ -8,12 +8,13 @@ import { Link } from "react-router-dom";
 import logo_1 from "/image/login_page_logo.png";
 import logo_2 from "/Favicon.png";
 import ProfileImage from "./ProfileImage";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const MessageSidebar = () => {
   const dispatch = useDispatch();
   const { users, selectedUser } = useSelector((state) => state.messages);
   const { user: currentUser } = useSelector((state) => state.user);
-  console.log("Message Users: ", users);
+
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
@@ -87,6 +88,7 @@ const MessageSidebar = () => {
                 <ProfileImage
                   user={currentUser}
                   className={collapsed ? "w-8 h-8" : "w-10 h-10"}
+                  collapsed={collapsed}
                 />
                 {!collapsed && (
                   <div className="flex flex-col">
@@ -101,6 +103,14 @@ const MessageSidebar = () => {
           </div>
         )}
       </div>
+
+      {/* Collapse Button */}
+      <button
+        className="absolute top-4 -right-8 md:-right-4 bg-gray-700/50 hover:bg-gray-700 text-white p-1 rounded-full transition-colors"
+        onClick={() => setCollapsed(!collapsed)}
+      >
+        {collapsed ? <ArrowRight /> : <ArrowLeft />}
+      </button>
     </aside>
   );
 };

@@ -2,7 +2,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
-const ProfileImage = ({ user, username = false,showUserNameOnly=false,  className }) => {
+const ProfileImage = ({ user, collapsed, username = false,showUserNameOnly=false,  className }) => {
   const { user: currentUser } = useSelector((state) => state.user);
   console.log("user: ", user);
 
@@ -29,7 +29,7 @@ const ProfileImage = ({ user, username = false,showUserNameOnly=false,  classNam
       </div>
 
       {username && <Link to={`/profile/${user?._id}`} className="font-semibold text-sm text-white">{user?.username}</Link>}
-      {showUserNameOnly && <p  className="font-semibold text-sm text-white">{user?.username}</p>}
+      {!collapsed && showUserNameOnly && <p  className="font-semibold text-sm text-white">{user?.username}</p>}
     </div>
   );
 };
