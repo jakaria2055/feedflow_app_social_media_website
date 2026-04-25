@@ -3,6 +3,7 @@ import userSlice from "./slices/userSlices";
 import storiesSlice from "./slices/storiesSlice";
 import postSlice from "./slices/postSlice";
 import reelSlice  from "./slices/reelSlice";
+import  messageSlice  from "./slices/messageSlice";
 
 const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
     stories: storiesSlice,
     posts: postSlice,
     reels: reelSlice,
+    messages: messageSlice,
   },
 });
 

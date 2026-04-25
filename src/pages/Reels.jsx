@@ -16,6 +16,7 @@ import FollowButton from "../components/FollowButton";
 import LikeButton from "../components/LikeButton";
 import Modal from "../components/Modal";
 import CommentSection from "../components/CommentSection";
+import CommentForm from "../components/CommentForm";
 
 const Reels = () => {
   const { reels } = useSelector((state) => state.reels);
@@ -210,6 +211,7 @@ const Reels = () => {
           onClose={handleCloseModal}
           initialWidth="max-w-2xl"
           initialHeight="h-auto"
+          showCloseBtn
         >
           <div className="flex flex-col w-full h-[500px] bg-black/50 rounded-lg">
             <div className="flex shrink-0 p-3 border-b border-gray-700">
@@ -230,6 +232,16 @@ const Reels = () => {
             {/* Comment List Section */}
             <div className="flex-1 overflow-y-auto no-scrollbar space-y-4">
               <CommentSection comments={selectedReelComments} />
+            </div>
+
+            {/* Comment Form */}
+            <div className="flex shrink-0 p-3 border-t border-gray-700">
+              <CommentForm
+                item={selectedReel}
+                type="reel"
+                currentUser={currentUser}
+                setComments={setSelectedReelComments}
+              />
             </div>
           </div>
         </Modal>
