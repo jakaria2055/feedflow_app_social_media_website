@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -9,6 +9,9 @@ const Modal = ({
   showCloseBtn = false,
   initialWidth = "max-w-md",
   initialHeight = "h-[85vh]",
+  handlePrev,
+  handleNext,
+  showBtn,
 }) => {
   const [show, setShow] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -53,6 +56,23 @@ const Modal = ({
         >
           <X size={28} />
         </button>
+      )}
+
+      {showBtn && (
+        <>
+          <button
+            onClick={handlePrev}
+            className="absolute top-1/2 left-4 rounded-full bg-white/40 p-2"
+          >
+            <ArrowLeft size={24} />
+          </button>
+          <button
+            onClick={handleNext}
+            className="absolute top-1/2 right-4 rounded-full bg-white/40 p-2"
+          >
+            <ArrowRight size={24} />
+          </button>
+        </>
       )}
 
       {/* Content */}

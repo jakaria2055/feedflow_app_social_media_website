@@ -56,6 +56,7 @@ export default messageSlice.reducer;
 
 // Send Message
 export const sendMessage = (formData) => async (dispatch, getState) => {
+  console.log("Form Data: ", formData);
   dispatch(setLoading(true));
   const { selectedUser } = getState().messages;
   if (!selectedUser) {
@@ -68,13 +69,15 @@ export const sendMessage = (formData) => async (dispatch, getState) => {
     const { data } = await axiosInstance.post(
       `/messages/send/${selectedUser._id}`,
       formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     if (data?.success) {
       dispatch(addMessage(data.data));
     }
   } catch (error) {
-    dispatch(setError(error?.response?.data?.message || "Sending Message Failed"));
+    dispatch(
+      setError(error?.response?.data?.message || "Sending Message Failed"),
+    );
   } finally {
     dispatch(setLoading(false));
   }
@@ -104,7 +107,9 @@ export const getAllUsersForMessage = () => async (dispatch) => {
       dispatch(setAllUsersForMessages(data.data));
     }
   } catch (error) {
-    dispatch(setError(error?.response?.data?.message || "Get Message User Failed"));
+    dispatch(
+      setError(error?.response?.data?.message || "Get Message User Failed"),
+    );
   } finally {
     dispatch(setLoading(false));
   }
