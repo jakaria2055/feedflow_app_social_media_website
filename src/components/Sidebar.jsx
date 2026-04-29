@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Modal from "./Modal";
 import CreateMedia from "./CreateMedia";
+import NotificationBell from "./NotificationBell";
 
 const Sidebar = () => {
   const dispatch = useDispatch();
@@ -110,9 +111,9 @@ const Sidebar = () => {
           {/* Notification Button */}
           <button
             onClick={handleNotificationClick}
-            className="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 hover:bg-white/10 text-white hover:text-white group w-full"
+            className="flex items-center gap-3 px-1 py-3 rounded-xl transition-all duration-300 hover:bg-white/10 text-white hover:text-white group w-full"
           >
-            <Bell
+            <NotificationBell
               size={22}
               className="transition-transform duration-300 group-hover:scale-110 text-white"
             />

@@ -13,9 +13,14 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 const MessageSidebar = () => {
   const dispatch = useDispatch();
   const { users, selectedUser } = useSelector((state) => state.messages);
-  const { user: currentUser } = useSelector((state) => state.user);
+  const { user: currentUser, onlineUsers } = useSelector((state) => state.user);
 
   const [collapsed, setCollapsed] = useState(false);
+  const [showOnlineUsers, setShowOnlineUsers] = useState(false);
+
+  const filteredUsers = showOnlineUsers
+    ? users.filter((user) => onlineUsers.includes(user?._id))
+    : users;
 
   useEffect(() => {
     dispatch(getAllUsersForMessage());
@@ -41,14 +46,40 @@ const MessageSidebar = () => {
         </Link>
       </div>
 
-      <div className="">
-        <h1>Show Active User</h1>
+      {/* Show Online User Filter */}
+      <div className="relative mt-3 flex justify-center items-center gap-2">
+        <label className="cursor-pointer flex text-white items-center gap-2 relative">
+          <input
+            type="checkbox"
+            checked={showOnlineUsers}
+            onChange={(e) => setShowOnlineUsers(e.target.checked)}
+            className="checkbox checkbox-sm text-white"
+          />
+          {!collapsed && <span className="text-sm">Show Online Only</span>}
+          {collapsed && (
+            <span className="absolute -top-2 -right-2 flex justify-center items-center w-5 h-5 rounded-full bg-red-500 text-[10px] text-white font-medium">
+              {onlineUsers.length - 1}
+            </span>
+          )}
+
+          {!collapsed && (
+            <span className="text-xs text-zinc-500">
+              {onlineUsers.length - 1} Online
+            </span>
+          )}
+        </label>
       </div>
+
+      {filteredUsers.length === 0 && (
+        <div className="flex justify-center items-center h-screen">
+          <p className="text-sm text-zinc-500">No Online User</p>
+        </div>
+      )}
 
       {/* Scrollbar User */}
       <div className="flex-1 border-t border-gray-800/50 overflow-y-auto no-scrollbar mt-6">
         <nav className="flex flex-col gap-3">
-          {users?.map((user, i) => {
+          {filteredUsers?.map((user, i) => {
             const isActive = selectedUser?._id === user?._id;
             return (
               <button

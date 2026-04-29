@@ -415,7 +415,7 @@ const Stories = () => {
         initialHeight="h-auto"
       >
         <div ref={storiesModalRef} className="w-full max-w-2xl">
-          <CreateMedia type="story" />
+          <CreateMedia type="story" onClose={() => setIsCreateStoryModal(false)}/>
         </div>
       </Modal>
 

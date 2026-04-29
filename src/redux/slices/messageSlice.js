@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../lib/axios.js";
+import { getSocket } from "../../lib/socket.js";
 
 // Initial State
 const initialState = {
@@ -113,4 +114,23 @@ export const getAllUsersForMessage = () => async (dispatch) => {
   } finally {
     dispatch(setLoading(false));
   }
+};
+
+//Subscribe to message from he selected user
+export const subscribeMessages = () => async (dispatch, getState) => {
+  const { selectedUser } = getState().messages;
+  if (!selectedUser) return;
+  const socket = getSocket();
+  if (!socket) return;
+  socket.on("newMessage", (newMessage) => {
+    if (newMessage.senderId !== selectedUser?._id) return;
+    dispatch(addMessage(newMessage));
+  });
+};
+
+//UnSubscribe from newMessage
+export const unSubscribeMessages = () => async () => {
+  const socket = getSocket();
+  if (!socket) return;
+  socket.off("newMessage");
 };

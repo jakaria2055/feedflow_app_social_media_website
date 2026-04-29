@@ -7,6 +7,7 @@ import Media from "./Media";
 import Modal from "./Modal";
 import CommentSection from "./CommentSection";
 import { Pause, Play, Volume2, VolumeX } from "lucide-react";
+import { timeAgo } from "../lib/timeAgo";
 
 const PostCard = ({ post, currentUser }) => {
   console.log("Post: ", post);
@@ -122,7 +123,11 @@ const PostCard = ({ post, currentUser }) => {
       <div className="bg-opacity-0 my-5 rounded-xl shadow-md shadow-white max-w-[300px] w-full mx-auto">
         {/* Header */}
         <div className="flex items-center px-3 py-2 gap-2">
-          <ProfileImage user={post?.user} username />
+          <div className="relative">
+            <ProfileImage user={post?.user} username />
+            <p className="text-xs text-gray-600 absolute left-11 top-6">{timeAgo(post?.createdAt)}</p>
+          </div>
+
           <div>
             <FollowButton
               targetUserId={post?.user?._id}

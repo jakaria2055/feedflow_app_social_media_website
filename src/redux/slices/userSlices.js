@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../lib/axios.js";
 import toast from "react-hot-toast";
+import { connectSocket, disconnectSocket } from "../../lib/socket.js";
 
 // Initial State
 const initialState = {
@@ -10,8 +11,12 @@ const initialState = {
   loading: false, // Tracks API request status
   error: null, // Stores error messages
   isAuthenticated: false,
+  isCheckingAuth: true,
   followers: [],
+  onlineUsers: [],
   following: [],
+  notification: [],
+  socket: null,
 };
 
 // Slice Definition
@@ -22,6 +27,18 @@ export const userSlice = createSlice({
     // Set loading state (true/false)
     setLoading: (state, action) => {
       state.loading = action.payload;
+    },
+
+    setCheckingAuth: (state, action) => {
+      state.isCheckingAuth = action.payload;
+    },
+
+    setSocket: (state, action) => {
+      state.socket = action.payload;
+    },
+
+    setOnlineUsers: (state, action) => {
+      state.onlineUsers = action.payload;
     },
 
     // Set user data and authentication status
@@ -56,6 +73,57 @@ export const userSlice = createSlice({
       state.error = null;
     },
 
+    setNotification: (state, action) => {
+      const { type, userId, postId, targetUserId } = action.payload;
+
+      if (type === "unlike") {
+        state.notification = state.notification.filter(
+          (notify) =>
+            !(
+              notify.type === "like" &&
+              notify.userId?.toString() === userId?.toString() &&
+              notify.postId?.toString() === postId?.toString()
+            ),
+        );
+        return;
+      }
+
+      if (type === "unfollow") {
+        state.notification = state.notification.filter(
+          (notify) =>
+            !(
+              notify.type === "follow" &&
+              notify.userId?.toString() === userId?.toString() &&
+              notify.targetUserId?.toString() === targetUserId?.toString()
+            ),
+        );
+        return;
+      }
+
+      if (type === "like" || type === "follow") {
+        if (type === "like") {
+          state.notification = state.notification.filter(
+            (notify) =>
+              !(
+                notify.type === "like" &&
+                notify.userId?.toString() === userId?.toString() &&
+                notify.postId?.toString() === postId?.toString()
+              ),
+          );
+        } else if (type === "follow") {
+          state.notification = state.notification.filter(
+            (notify) =>
+              !(
+                notify.type === "follow" &&
+                notify.userId?.toString() === userId?.toString() &&
+                notify.targetUserId?.toString() === targetUserId?.toString()
+              ),
+          );
+        }
+        state.notification.unshift(action.payload);
+      }
+    },
+
     // Set error message and reset authentication
     setError: (state, action) => {
       state.error = action.payload;
@@ -79,6 +147,9 @@ export const userSlice = createSlice({
 // Export actions
 export const {
   setLoading,
+  setCheckingAuth,
+  setSocket,
+  setOnlineUsers,
   setUser,
   setSavedPosts,
   setProfileUser,
@@ -86,12 +157,48 @@ export const {
   updateFollowing,
   setFollowers,
   setFollowing,
+  setNotification,
   setError,
   setSuggestedUser,
   logout,
 } = userSlice.actions;
 // Export reducer
 export default userSlice.reducer;
+
+const setupSocketConnection = (userId, dispatch) => {
+  const socket = connectSocket(userId);
+  dispatch(setSocket(socket));
+
+  socket.on("getOnlineUsers", (userIds) => {
+    dispatch(setOnlineUsers(userIds));
+  });
+
+  socket.on("notification", (notification) => {
+    dispatch(setNotification(notification));
+  });
+
+  socket.on("connect_error", (error) => {
+    console.log("Error: Socket connection error: ", error);
+  });
+
+  socket.on("disconnect", (reason) => {
+    console.log("Socket Disconnect: ", reason);
+    if (reason === "io server disconnect") {
+      socket.connect();
+    }
+  });
+};
+
+const cleanupSocketConnection = (socket, dispatch) => {
+  if (socket) {
+    socket.off("getOnlineUsers");
+    socket.off("notification");
+    socket.off("connect_error");
+    socket.off("disconnect");
+    disconnectSocket();
+    dispatch(setSocket(null));
+  }
+};
 
 // ==============================
 // Async Thunks (API Calls)
@@ -105,6 +212,9 @@ export const registerUser = (userData, navigate) => async (dispatch) => {
     if (data?.success) {
       dispatch(setUser(data?.user));
       toast.success(data.message || "Register success.");
+      // const socket = connectSocket(data?.user?._id);
+      // dispatch(setSocket(socket));
+      setupSocketConnection(data?.user?._id, dispatch);
       navigate("/");
     }
   } catch (error) {
@@ -123,6 +233,9 @@ export const loginUser = (userData, navigate) => async (dispatch) => {
     if (data?.success) {
       dispatch(setUser(data?.user));
       toast.success(data.message || "Login success.");
+      // const socket = connectSocket(data?.user?._id);
+      // dispatch(setSocket(socket));
+      setupSocketConnection(data?.user?._id, dispatch);
       navigate("/");
     }
   } catch (error) {
@@ -136,31 +249,38 @@ export const loginUser = (userData, navigate) => async (dispatch) => {
 // Get current logged-in user profile
 export const getCurrentUser = () => async (dispatch) => {
   dispatch(setLoading(true));
+  dispatch(setCheckingAuth(true));
   try {
     const { data } = await axiosInstance.get("/user/profile");
     if (data?.success) {
       dispatch(setUser(data?.user));
+      // const socket = connectSocket(data?.user?._id);
+      // dispatch(setSocket(socket));
+      setupSocketConnection(data?.user?._id, dispatch);
     }
   } catch (error) {
     dispatch(setError(error?.response?.data?.message || "Profile Failed"));
   } finally {
+    dispatch(setCheckingAuth(false));
     dispatch(setLoading(false));
   }
 };
 
 // Logout user
-export const logoutUser = (navigate) => async (dispatch) => {
+export const logoutUser = (navigate) => async (dispatch, getState) => {
   dispatch(setLoading(true));
   try {
     const { data } = await axiosInstance.get("/user/logout");
-    if (data?.success) {
-      dispatch(logout());
-      toast.success(data.message || "Logout success.");
-      navigate("/");
-    }
+    // if (data?.success) {
+    dispatch(logout());
+    toast.success(data.message || "Logout success.");
+    const { socket } = getState().user;
+    cleanupSocketConnection(socket, dispatch);
+    navigate("/");
+    // }
   } catch (error) {
     dispatch(setError(error?.response?.data?.message || "Logout Failed"));
-    toast.error(error?.response?.data?.message || "Logout Failed");
+    // toast.error(error?.response?.data?.message || "Logout Failed");
   } finally {
     dispatch(setLoading(false));
   }

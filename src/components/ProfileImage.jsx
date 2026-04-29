@@ -2,11 +2,11 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
-const ProfileImage = ({ user, collapsed, username = false,showUserNameOnly=false,  className }) => {
-  const { user: currentUser } = useSelector((state) => state.user);
-  console.log("user: ", user);
+const ProfileImage = ({ user, collapsed, username = false, showUserNameOnly=false,  className }) => {
+  const { user: currentUser, onlineUsers } = useSelector((state) => state.user);
 
-  const isOnline = true;
+
+  const isOnline = onlineUsers?.includes(user?._id);
 
   return (
     <div className="flex items-center gap-3">

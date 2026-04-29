@@ -2,7 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import MessageSidebar from "../components/MessageSidebar";
 import { useDispatch, useSelector } from "react-redux";
 import ProfileImage from "../components/ProfileImage";
-import { getAllMessages, sendMessage } from "../redux/slices/messageSlice";
+import {
+  getAllMessages,
+  sendMessage,
+  subscribeMessages,
+  unSubscribeMessages,
+} from "../redux/slices/messageSlice";
 import EmptyMessage from "../components/EmptyMessage";
 import ChatInput from "../components/ChatInput";
 import Modal from "../components/Modal";
@@ -109,7 +114,9 @@ const Message = () => {
   useEffect(() => {
     if (selectedUser?._id) {
       dispatch(getAllMessages(selectedUser?._id));
+      dispatch(subscribeMessages());
     }
+    return () => dispatch(unSubscribeMessages());
   }, [dispatch, selectedUser?._id]);
 
   return (

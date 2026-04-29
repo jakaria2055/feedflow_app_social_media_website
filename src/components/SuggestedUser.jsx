@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { axiosInstance } from "../lib/axios";
 import { Link, useLocation } from "react-router-dom";
 import ProfileImage from "./ProfileImage";
 import FollowButton from "./FollowButton";
@@ -7,56 +6,33 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchSuggestedUsers } from "../redux/slices/userSlices";
 
 const SuggestedUser = () => {
-  const {
-    user: currentUser,
-    suggestedUsers,
-    loading,
-    error,
-  } = useSelector((state) => state.user);
+  const { user: currentUser, suggestedUsers } = useSelector(
+    (state) => state.user,
+  );
+  const [loadingUsers, setLoadingUsers] = useState(true);
 
   const dispatch = useDispatch();
 
   const location = useLocation();
   const path = location.pathname.startsWith("/suggested-users");
 
-  // const fetchSuggestedUsers = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const { data } = await axiosInstance.get(`/user/suggested/users`);
-  //     if (data?.success) {
-  //       setSuggestedUsers(data?.users);
-  //     } else {
-  //       setError(data.message || "Failed to fetch suggested USers");
-  //     }
-  //   } catch (error) {
-  //     console.log("Error: ", error);
-  //     setError(error.message || "Failed to fetch suggested USers");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   useEffect(() => {
-    dispatch(fetchSuggestedUsers());
+    const fetchUsers = async () => {
+      setLoadingUsers(true);
+      await dispatch(fetchSuggestedUsers());
+      setLoadingUsers(false);
+    };
+
+    fetchUsers();
   }, [dispatch]);
 
-  if (loading) {
+  if (loadingUsers) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
         <span className="ml-3 text-lg font-medium text-gray-700">
           Loading...
         </span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-40">
-        <p className="text-red-600 font-semibold bg-red-100 px-4 py-2 rounded-md shadow">
-          {error}
-        </p>
       </div>
     );
   }
