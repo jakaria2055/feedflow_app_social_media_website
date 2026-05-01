@@ -43,48 +43,49 @@ const Modal = ({
       {/* Overlay */}
       <div
         onClick={onClose}
-        className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300 ${
+        className={`absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity duration-300 ${
           show ? "opacity-100" : "opacity-0"
         }`}
       ></div>
 
-      {/* Close */}
+      {/* Close Button */}
       {showCloseBtn && (
         <button
           onClick={onClose}
-          className="absolute top-3 right-4 z-10 text-gray-400 hover:text-white"
+          className="absolute top-4 right-4 z-10 text-gray-400 hover:text-white bg-black/50 backdrop-blur-sm p-2 rounded-full transition-all duration-200 hover:scale-110"
         >
-          <X size={28} />
+          <X size={24} />
         </button>
       )}
 
+      {/* Navigation Buttons */}
       {showBtn && (
         <>
           <button
             onClick={handlePrev}
-            className="absolute top-1/2 left-4 rounded-full bg-white/40 p-2"
+            className="absolute top-1/2 left-6 -translate-y-1/2 bg-black/60 backdrop-blur-sm hover:bg-black/80 p-3 rounded-full transition-all duration-200 hover:scale-110"
           >
-            <ArrowLeft size={24} />
+            <ArrowLeft size={22} />
           </button>
           <button
             onClick={handleNext}
-            className="absolute top-1/2 right-4 rounded-full bg-white/40 p-2"
+            className="absolute top-1/2 right-6 -translate-y-1/2 bg-black/60 backdrop-blur-sm hover:bg-black/80 p-3 rounded-full transition-all duration-200 hover:scale-110"
           >
-            <ArrowRight size={24} />
+            <ArrowRight size={22} />
           </button>
         </>
       )}
 
       {/* Content */}
       <div
-        className={`relative flex flex-col bg-black/50 rounded-xl overflow-hidden w-[90%] ${initialWidth} ${initialHeight} border border-gray-800 transform transition-all duration-300 ${
+        className={`relative flex flex-col bg-gradient-to-br from-gray-900 to-black rounded-2xl overflow-hidden w-[95%] ${initialWidth} ${initialHeight} border border-gray-800/50 shadow-2xl shadow-black/50 transform transition-all duration-300 ${
           show ? "opacity-100 scale-100" : "opacity-0 scale-95"
         }`}
       >
         {children}
       </div>
     </div>,
-    document.body, // 🔥 KEY FIX
+    document.body,
   );
 };
 

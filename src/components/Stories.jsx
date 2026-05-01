@@ -17,7 +17,6 @@ import { useDispatch, useSelector } from "react-redux";
 import CreateMedia from "./CreateMedia.jsx";
 import Modal from "./Modal.jsx";
 import { getAllStories } from "../redux/slices/storiesSlice.js";
-import axios from "axios";
 import { axiosInstance } from "../lib/axios.js";
 import ProfileImage from "./ProfileImage.jsx";
 import CommentSection from "./CommentSection.jsx";
@@ -29,11 +28,9 @@ const Stories = () => {
   const { stories } = useSelector((state) => state.stories);
   console.log("currentUser: ", currentUser);
   console.log("Stories: ", stories);
-  // const [stories, setStories] = useState([]);
 
   const dispatch = useDispatch();
 
-  const createModalRef = useRef(null);
   const storiesModalRef = useRef(null);
   const videoRef = useRef(null);
   const progressIntervalRef = useRef(null);
@@ -55,7 +52,6 @@ const Stories = () => {
   const currentUserStories = stories[currentUserIndex]?.stories || [];
   const currentStory = currentUserStories[currentStoryIndex];
   const currentStoryUser = stories[currentUserIndex]?.user;
-
 
   const isLastStoryOfLastUser =
     currentUserIndex === stories.length - 1 &&
@@ -125,14 +121,11 @@ const Stories = () => {
       return;
     }
 
-    // Next story of same user
     if (currentStoryIndex < activeUserStories.length - 1) {
       setCurrentStoryIndex((prev) => prev + 1);
       setProgress(0);
       setIsPlaying(true);
-    }
-    // Move to next user's first story
-    else if (currentUserIndex < stories.length - 1) {
+    } else if (currentUserIndex < stories.length - 1) {
       setCurrentUserIndex((prev) => prev + 1);
       setCurrentStoryIndex(0);
       setProgress(0);
@@ -335,15 +328,6 @@ const Stories = () => {
     showViewStoryModal,
   ]);
 
-  // const getAllStories = async () => {
-  //   try {
-  //     const { data } = await axiosInstance.get("/story/all");
-  //     setStories(data.stories);
-  //   } catch (error) {
-  //     console.log("Error:", error);
-  //   }
-  // };
-
   useEffect(() => {
     dispatch(getAllStories());
   }, [dispatch]);
@@ -357,49 +341,62 @@ const Stories = () => {
   };
 
   return (
-    <div className="flex items-center overflow-x-auto p-2 space-x-4 no-scrollbar">
+    <div className="flex items-center overflow-x-auto p-3 space-x-4 no-scrollbar bg-gradient-to-r from-gray-900/40 to-black/40 rounded-xl">
+      {/* Create Story Button  */}
       <div
         onClick={handleCreateStoryModal}
-        className="shrink-0 flex flex-col items-center cursor-pointer"
+        className="shrink-0 flex flex-col items-center cursor-pointer group"
       >
-        <div className="relative w-20 h-20 rounded-full border-2 border-dashed border-linear-to-r from-pink-500 to-purple-500 shadow-lg shadow-pink-500/30">
-          {currentUser?.profileImage ? (
-            <img
-              src={currentUser?.profileImage}
-              alt="profile"
-              className="w-full rounded-full h-full object-cover z-0"
-            />
-          ) : (
-            <div className="w-full h-full rounded-full flex items-center justify-center bg-gray-800 z-0">
-              <Plus size={18} className="text-center text-gray-400" />
-            </div>
-          )}
-          <div className="absolute bottom-0 right-0 rounded-full  bg-white shadow-lg p-1">
-            <Plus size={18} className="w-5 h-5 text-center text-gray-800" />
+        <div className="relative w-20 h-20 rounded-full bg-gradient-to-r from-[#833AB4] to-[#E1306C] p-[2px] shadow-lg shadow-pink-500/30 group-hover:scale-105 transition-all duration-300">
+          <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center overflow-hidden">
+            {currentUser?.profileImage ? (
+              <img
+                src={
+                  currentUser?.profileImage ||
+                  `https://placehold.co/150x150/000000/FFFFFF?text=${currentUser?.username?.charAt(0).toUpperCase()}`
+                }
+                alt="profile"
+                className="w-full rounded-full h-full object-cover"
+              />
+            ) : (
+              <img
+                src={`https://placehold.co/150x150/000000/FFFFFF?text=${currentUser?.username?.charAt(0).toUpperCase()}`}
+                alt="profile"
+                className="w-full rounded-full h-full object-cover"
+              />
+            )}
+          </div>
+          <div className="absolute -bottom-1 -right-1 rounded-full bg-gradient-to-r from-[#833AB4] to-[#E1306C] p-1 shadow-lg">
+            <Plus size={14} className="w-4 h-4 text-white" />
           </div>
         </div>
-        <span className="mt-2 text-xs text-gray-400 truncate w-20 text-center">
+        <span className="mt-2 text-xs text-gray-300 truncate w-20 text-center font-medium">
           Create Story
         </span>
       </div>
 
-      <div className="flex space-x-4 py-1.5 overflow-x-auto no-scrollbar">
+      {/* Stories List */}
+      <div className="flex space-x-4 py-1 overflow-x-auto no-scrollbar">
         {stories?.map((userStories, index) => (
           <div
             key={userStories?.user?._id}
             onClick={() => handleUserClick(index)}
-            className="flex flex-col items-center cursor-pointer shrink-0"
+            className="flex flex-col items-center cursor-pointer shrink-0 group"
           >
-            <div
-              className={`p-0.5 rounded-full mb-2 transition-all duration-200 ${index === currentUserIndex ? "ring-2 ring-blue-500 ring-offset-2 scale-105" : "hover:scale-105"}`}
-            >
+            <div className="relative p-[2px] rounded-full bg-gradient-to-r from-[#833AB4] via-[#E1306C] to-[#F77737] group-hover:scale-105 transition-all duration-300">
               <img
-                src={userStories?.user?.profileImage || "/default-avatar-png"}
+                src={
+                  userStories?.user?.profileImage ||
+                  `https://placehold.co/150x150/000000/FFFFFF?text=${userStories?.user?.username?.charAt(0).toUpperCase()}`
+                }
                 alt={userStories?.user?.username}
-                className="w-14 h-14 rounded-full border-2 border-white object-cover"
+                className="w-14 h-14 rounded-full border-2 border-gray-900 object-cover"
+                onError={(e) => {
+                  e.target.src = "/default-avatar.png";
+                }}
               />
             </div>
-            <span className="mt-2 text-xs text-gray-400 truncate w-20 text-center">
+            <span className="mt-2 text-xs text-gray-300 truncate w-20 text-center font-medium">
               {userStories?.user?._id === currentUser?._id
                 ? "Your Story"
                 : userStories?.user?.username}
@@ -408,6 +405,7 @@ const Stories = () => {
         ))}
       </div>
 
+      {/* Create Story Modal */}
       <Modal
         openModal={isCreateStoryModal}
         onClose={() => setIsCreateStoryModal(false)}
@@ -415,26 +413,32 @@ const Stories = () => {
         initialHeight="h-auto"
       >
         <div ref={storiesModalRef} className="w-full max-w-2xl">
-          <CreateMedia type="story" onClose={() => setIsCreateStoryModal(false)}/>
+          <CreateMedia
+            type="story"
+            onClose={() => setIsCreateStoryModal(false)}
+          />
         </div>
       </Modal>
 
+      {/* View Story Modal */}
       <Modal
         openModal={showStoryModal}
         onClose={() => setShowStoryModal(false)}
+        showCloseBtn={false}
       >
         <div
           ref={storiesModalRef}
-          className="w-full h-full relative flex items-center justify-center"
+          className="w-full h-full relative flex items-center justify-center bg-black"
         >
-          <div className="absolute top-0 left-0 right-0 z-10 flex space-x-1 p-3">
+          {/* Progress Bars - Enhanced */}
+          <div className="absolute top-0 left-0 right-0 z-20 flex space-x-1 p-3">
             {currentUserStories?.map((story, index) => (
               <div
                 key={story?._id}
                 className="flex-1 h-1 bg-gray-600 rounded-full overflow-hidden"
               >
                 <div
-                  className="h-full bg-white transition-all duration-300 ease-out"
+                  className="h-full bg-gradient-to-r from-[#833AB4] via-[#E1306C] to-[#F77737] transition-all duration-300 ease-out rounded-full"
                   style={{
                     width:
                       index === currentStoryIndex
@@ -447,12 +451,13 @@ const Stories = () => {
               </div>
             ))}
           </div>
+
           {/* HEADER */}
-          <div className="absolute top-8 left-0 right-0 z-10 flex justify-between items-center px-4">
-            <div className="flex items-center space-x-3">
-              <ProfileImage user={currentStoryUser} />
+          <div className="absolute top-4 left-0 right-0 z-20 flex justify-between items-center px-4">
+            <div className="flex items-center space-x-3 bg-black/50 backdrop-blur-md rounded-full px-3 py-1.5 border border-white/10">
+              <ProfileImage user={currentStoryUser} className="w-8 h-8" />
               <div className="flex flex-col">
-                <span className="text-gray-200 font-semibold text-sm">
+                <span className="text-white font-semibold text-sm">
                   {currentStoryUser?.username}
                 </span>
                 <span className="text-gray-300 text-xs">
@@ -461,46 +466,47 @@ const Stories = () => {
               </div>
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
               <button
                 onClick={handlePlayPause}
-                className="text-white hover:opacity-80 transition-opacity p-2 bg-black/50 rounded-full"
+                className="text-white hover:opacity-80 transition-all duration-200 p-2 bg-black/50 backdrop-blur-md rounded-full hover:bg-black/70"
               >
-                {currentPlayState ? <Pause size={20} /> : <Play size={20} />}
+                {currentPlayState ? <Pause size={18} /> : <Play size={18} />}
               </button>
               {currentStory?.mediaType === "video" && (
                 <button
                   onClick={handleMediaVolume}
-                  className="text-white hover:opacity-80 transition-opacity p-2 bg-black/50 rounded-full"
+                  className="text-white hover:opacity-80 transition-all duration-200 p-2 bg-black/50 backdrop-blur-md rounded-full hover:bg-black/70"
                 >
-                  {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                  {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
                 </button>
               )}
 
               {currentStoryUser?._id === currentUser?._id && (
                 <button
                   onClick={() => setShowViewStoryModal(true)}
-                  className="text-white hover:opacity-80 transition-opacity p-2 bg-black/50 rounded-full"
+                  className="text-white hover:opacity-80 transition-all duration-200 p-2 bg-black/50 backdrop-blur-md rounded-full hover:bg-black/70"
                 >
-                  <Eye size={20} />
+                  <Eye size={18} />
                 </button>
               )}
               <button
                 onClick={() => setShowStoryModal(false)}
-                className="text-white hover:opacity-80 transition-opacity p-2 bg-black/50 rounded-full"
+                className="text-white hover:opacity-80 transition-all duration-200 p-2 bg-black/50 backdrop-blur-md rounded-full hover:bg-black/70"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
           </div>
+
           {/* STORY CONTENT */}
-          <div className="flex items-center justify-center h-full pt-12 pb-20">
+          <div className="flex items-center justify-center h-full w-full pt-16 pb-24">
             {currentStory?.mediaType === "image" ? (
               <img
                 src={currentStory?.mediaUrl}
                 alt="story"
                 onLoad={() => handleStoreView(currentStory?._id)}
-                className="max-w-full max-h-full object-contain"
+                className="max-w-full max-h-full object-contain rounded-lg"
               />
             ) : (
               <video
@@ -512,75 +518,80 @@ const Stories = () => {
                 autoPlay
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
-                className="max-w-full max-h-full object-contain"
+                className="max-w-full max-h-full object-contain rounded-lg"
               ></video>
             )}
           </div>
+
+          {/* Caption  */}
           {currentStory?.caption && (
-            <div className="absolute bottom-20 left-0 right-0 px-4">
-              <p className="text-white text-center text-sm bg-black/50 rounded-lg p-3 backdrop-blur-sm">
+            <div className="absolute bottom-24 left-0 right-0 px-4">
+              <p className="text-white text-center text-sm bg-black/60 backdrop-blur-md rounded-xl p-3 mx-auto max-w-md border border-white/10">
                 {currentStory?.caption}
               </p>
             </div>
           )}
-          {/* NAVIGATOR */}
+
+          {/* NAVIGATOR  */}
           <div className="absolute inset-0 flex justify-between items-center pointer-events-none">
             <button
               onClick={handlePreviousStory}
               disabled={!canGoPrevious}
-              className={`w-1/3 h-full flex items-center justify-start pointer-events-auto transition-opacity ${canGoPrevious ? "opacity-0 hover:opacity-100" : "opacity-0 cursor-default"}`}
+              className={`w-1/4 h-full flex items-center justify-start pointer-events-auto transition-all duration-300 ${
+                canGoPrevious
+                  ? "opacity-0 hover:opacity-100"
+                  : "opacity-0 cursor-default"
+              }`}
             >
-              <div className="bg-black/50 rounded-full p-3 backdrop-blur-sm">
-                <ArrowLeft className="text-white text-xl" />
+              <div className="bg-black/50 backdrop-blur-md rounded-full p-3 ml-2 hover:bg-black/70 transition-all duration-200">
+                <ArrowLeft className="text-white" size={20} />
               </div>
             </button>
             <button
               onClick={handleNextStory}
               disabled={!canGoNext}
-              className={`w-1/3 h-full flex items-center justify-end pointer-events-auto transition-opacity ${canGoNext ? "opacity-0 hover:opacity-100" : "opacity-0 cursor-default"}`}
+              className={`w-3/4 h-full flex items-center justify-end pointer-events-auto transition-all duration-300 ${
+                canGoNext
+                  ? "opacity-0 hover:opacity-100"
+                  : "opacity-0 cursor-default"
+              }`}
             >
-              <div className="bg-black/50 rounded-full p-3 backdrop-blur-sm">
-                <ArrowRight className="text-white text-xl" />
+              <div className="bg-black/50 backdrop-blur-md rounded-full p-3 mr-2 hover:bg-black/70 transition-all duration-200">
+                <ArrowRight className="text-white" size={20} />
               </div>
             </button>
           </div>
+
           {/* Button Control */}
-          <div className="absolute bottom-0 left-0 right-0 bg-black/50 pt-6 pb-4 px-4">
-            <div className="flex items-center justify-between">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent pt-8 pb-4 px-4">
+            <div className="flex items-center justify-between max-w-md mx-auto">
               <div className="flex items-center space-x-6">
                 <div className="relative flex flex-col items-center">
-                  {/* <HandHeart size={20} className="text-white hover:scale-110" /> */}
-                  <LikeButton type="story" item={currentStory}/>
-
+                  <LikeButton type="story" item={currentStory} />
                   {currentStory?.likes.length > 0 && (
-                    <span className="absolute -top-4 text-xs text-white font-medium bg-red-500 rounded-full min-h-5 h-5 flex items-center justify-center px-1.5 py-1">
+                    <span className="absolute -top-3 -right-3 text-xs text-white font-medium bg-gradient-to-r from-[#E1306C] to-[#F77737] rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-lg">
                       {currentStory.likes.length || 0}
                     </span>
                   )}
-                  {/* <span className="absolute -top-4 text-xs text-white font-medium bg-red-500 rounded-full min-h-5 h-5 flex items-center justify-center px-2">
-                    1
-                  </span> */}
                 </div>
-                {/* COmment Option */}
+
                 <button
                   onClick={commentModal}
-                  className="relative flex flex-col items-center"
+                  className="relative flex flex-col items-center group"
                 >
                   <MessageCircleHeart
-                    size={20}
-                    className="text-white hover:scale-110"
+                    size={22}
+                    className="text-white hover:scale-110 transition-transform duration-200"
                   />
                   {currentStory?.comments.length > 0 && (
-                    <span className="absolute -top-4 text-xs text-white font-medium bg-red-500 rounded-full min-h-5 h-5 flex items-center justify-center px-1.5 py-1">
+                    <span className="absolute -top-3 -right-3 text-xs text-white font-medium bg-gradient-to-r from-[#E1306C] to-[#F77737] rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-lg">
                       {currentStory.comments.length || 0}
                     </span>
                   )}
-                  {/* <span className="absolute -top-4 text-xs text-white font-medium bg-red-500 rounded-full min-h-5 h-5 flex items-center justify-center px-2">
-                    1
-                  </span> */}
                 </button>
               </div>
-              {/* Replay Section */}
+
+              {/* Reply Section */}
               <div className="flex-1 max-w-xs ml-4">
                 <div className="relative">
                   <input
@@ -592,15 +603,14 @@ const Stories = () => {
                         addCommentToStory(currentStory?._id);
                       }
                     }}
-                    placeholder="Replay..."
-                    className="w-full px-4 py-2 rounded-full bg-white/20 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm text-sm border border-white/30"
+                    placeholder="Send message..."
+                    className="w-full px-4 py-2 pr-10 rounded-full bg-white/10 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#E1306C] backdrop-blur-sm text-sm border border-white/20 transition-all duration-200"
                   />
-
                   <button
                     onClick={() => addCommentToStory(currentStory?._id)}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-200 transition-colors"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white/70 hover:text-white transition-all duration-200 hover:scale-110"
                   >
-                    <Send size={20} />
+                    <Send size={18} />
                   </button>
                 </div>
               </div>
@@ -610,26 +620,26 @@ const Stories = () => {
           {/* Comment Modal */}
           {showCommentsModal && (
             <div
-              className="fixed inset-0 w-full z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
+              className="fixed inset-0 w-full z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
               onClick={() => {
                 setShowCommentModal(false);
               }}
             >
               <div
                 ref={commentsModalRef}
-                className="bg-black/50 rounded-t-2xl w-full max-w-lg max-h-[50vh] flex flex-col"
+                className="bg-gradient-to-t from-gray-900 to-gray-800 rounded-t-2xl w-full max-w-lg max-h-[70vh] flex flex-col animate-in slide-in-from-bottom duration-300"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-200">
+                <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                  <h3 className="text-lg font-semibold text-white">
                     Comments ({currentStory?.comments?.length || 0})
                   </h3>
                   <button
                     onClick={() => setShowCommentModal(false)}
-                    className="p-2 text-white hover:bg-gray-100 rounded-full transition-colors"
+                    className="p-1 text-gray-400 hover:text-white rounded-full transition-all duration-200 hover:bg-white/10"
                   >
-                    <X size={20} className="text-gray-600" />
+                    <X size={20} />
                   </button>
                 </div>
 
@@ -638,8 +648,8 @@ const Stories = () => {
                   <CommentSection comments={currentStory?.comments} />
                 </div>
 
-                {/* Replay Section */}
-                <div className="p-4 border-t border-gray-200 bg-black/50 ">
+                {/* Reply Section */}
+                <div className="p-4 border-t border-gray-700 bg-gray-800/50 backdrop-blur-sm">
                   <div className="relative">
                     <input
                       type="text"
@@ -650,15 +660,14 @@ const Stories = () => {
                           addCommentToStory(currentStory?._id);
                         }
                       }}
-                      placeholder="Replay..."
-                      className="w-full px-4 py-2 rounded-full bg-white/20 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm text-sm border border-white/30"
+                      placeholder="Write a comment..."
+                      className="w-full px-4 py-2 pr-10 rounded-full bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E1306C] text-sm transition-all duration-200"
                     />
-
                     <button
                       onClick={() => addCommentToStory(currentStory?._id)}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-200 transition-colors"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-[#E1306C] hover:text-[#F77737] transition-all duration-200 hover:scale-110"
                     >
-                      <Send size={20} />
+                      <Send size={18} />
                     </button>
                   </div>
                 </div>
@@ -669,33 +678,44 @@ const Stories = () => {
           {/* View Story Modal */}
           {showViewStoryModal && currentStory && (
             <div
-              className="fixed inset-0 w-full z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
+              className="fixed inset-0 w-full z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
               onClick={() => {
                 setShowViewStoryModal(false);
               }}
             >
               <div
-                className="bg-black/50 rounded-t-2xl w-full max-w-lg max-h-[50vh] flex flex-col"
+                className="bg-gradient-to-t from-gray-900 to-gray-800 rounded-t-2xl w-full max-w-lg max-h-[70vh] flex flex-col animate-in slide-in-from-bottom duration-300"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-200">
+                <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                  <h3 className="text-lg font-semibold text-white">
                     Viewers ({currentStory?.viewers?.length || 0})
                   </h3>
                   <button
                     onClick={() => setShowViewStoryModal(false)}
-                    className="p-2 text-white hover:bg-gray-100 rounded-full transition-colors"
+                    className="p-1 text-gray-400 hover:text-white rounded-full transition-all duration-200 hover:bg-white/10"
                   >
-                    <X size={20} className="text-gray-600" />
+                    <X size={20} />
                   </button>
                 </div>
 
                 {/* Viewers List */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
-                  {currentStory?.viewers.map((u) => (
-                    <ProfileImage key={u?._id} user={u} username />
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
+                  {currentStory?.viewers?.map((u) => (
+                    <div
+                      key={u?._id}
+                      className="hover:bg-white/5 rounded-lg transition-all duration-200 p-2"
+                    >
+                      <ProfileImage user={u} username />
+                    </div>
                   ))}
+                  {(!currentStory?.viewers ||
+                    currentStory.viewers.length === 0) && (
+                    <div className="text-center text-gray-400 py-8">
+                      No viewers yet
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

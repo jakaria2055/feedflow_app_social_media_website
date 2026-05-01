@@ -76,6 +76,7 @@ export const userSlice = createSlice({
     setNotification: (state, action) => {
       const { type, userId, postId, targetUserId } = action.payload;
 
+      // REMOVE LIKE
       if (type === "unlike") {
         state.notification = state.notification.filter(
           (notify) =>
@@ -88,6 +89,7 @@ export const userSlice = createSlice({
         return;
       }
 
+      // REMOVE FOLLOW
       if (type === "unfollow") {
         state.notification = state.notification.filter(
           (notify) =>
@@ -100,28 +102,41 @@ export const userSlice = createSlice({
         return;
       }
 
-      if (type === "like" || type === "follow") {
-        if (type === "like") {
-          state.notification = state.notification.filter(
-            (notify) =>
-              !(
-                notify.type === "like" &&
-                notify.userId?.toString() === userId?.toString() &&
-                notify.postId?.toString() === postId?.toString()
-              ),
-          );
-        } else if (type === "follow") {
-          state.notification = state.notification.filter(
-            (notify) =>
-              !(
-                notify.type === "follow" &&
-                notify.userId?.toString() === userId?.toString() &&
-                notify.targetUserId?.toString() === targetUserId?.toString()
-              ),
-          );
-        }
-        state.notification.unshift(action.payload);
+      // REMOVE DUPLICATES
+      if (type === "like") {
+        state.notification = state.notification.filter(
+          (notify) =>
+            !(
+              notify.type === "like" &&
+              notify.userId?.toString() === userId?.toString() &&
+              notify.postId?.toString() === postId?.toString()
+            ),
+        );
       }
+
+      if (type === "follow") {
+        state.notification = state.notification.filter(
+          (notify) =>
+            !(
+              notify.type === "follow" &&
+              notify.userId?.toString() === userId?.toString() &&
+              notify.targetUserId?.toString() === targetUserId?.toString()
+            ),
+        );
+      }
+
+      if (type === "comment") {
+        state.notification = state.notification.filter(
+          (notify) =>
+            !(
+              notify.type === "comment" &&
+              notify.userId?.toString() === userId?.toString() &&
+              notify.postId?.toString() === postId?.toString()
+            ),
+        );
+      }
+
+      state.notification.unshift(action.payload);
     },
 
     // Set error message and reset authentication

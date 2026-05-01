@@ -46,17 +46,17 @@ const ProfileViewer = ({
   if (!currentPost) return null;
 
   return (
-    <div className="relative w-full h-full overflow-hidden flex">
-      {/* Left SIde Media */}
-      <div className="relative flex items-center justify-center shrink-0 w-1/2 h-full bg-black">
+    <div className="relative w-full h-full overflow-hidden flex bg-gradient-to-br from-gray-900 to-black">
+      {/* Left Side Media */}
+      <div className="relative flex items-center justify-center shrink-0 w-1/2 h-full bg-black/50">
         {currentPost?.mediaType === "image" ? (
           <img
             src={currentPost?.mediaUrl}
             alt={currentPost?.caption}
-            className="max-w-full max-h-full w-full h-full object-contain"
+            className="max-w-full max-h-full w-full h-full object-contain rounded-lg"
           />
         ) : (
-          <div className="">
+          <div className="relative w-full h-full flex items-center justify-center">
             <video
               src={currentPost?.mediaUrl}
               loop
@@ -64,28 +64,28 @@ const ProfileViewer = ({
               muted={isMuted}
               autoPlay
               ref={modalVideoRef}
-              className="w-[300px] h-auto max-w-full max-h-full object-contain"
+              className="max-w-full max-h-full object-contain rounded-lg"
               onClick={handleModalVideoClick}
             ></video>
             {showIcon && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-500">
-                <button className="bg-black/50 hover:bg-black/80 p-2 rounded-full text-center text-6xl opacity-80">
+                <button className="bg-black/60 backdrop-blur-sm hover:bg-black/80 p-3 rounded-full text-center text-6xl opacity-90 transition-all">
                   {isPlaying ? (
                     <Play size={24} className="text-white" />
                   ) : (
-                    <Pause size={24} />
+                    <Pause size={24} className="text-white" />
                   )}
                 </button>
               </div>
             )}
             <button
               onClick={handleModalMuteToggle}
-              className="absolute bottom-4 right-4 bg-black/50 hover:bg-black/80 p-2 rounded-full text-center text-6xl opacity-80"
+              className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm hover:bg-black/80 p-2.5 rounded-full transition-all duration-200"
             >
               {isMuted ? (
                 <VolumeX size={18} className="text-white" />
               ) : (
-                <Volume2 size={18} />
+                <Volume2 size={18} className="text-white" />
               )}
             </button>
           </div>
@@ -93,9 +93,9 @@ const ProfileViewer = ({
       </div>
 
       {/* Right Side: Comment Section */}
-      <div className="flex flex-col w-1/2 border-2 border-gray-800">
+      <div className="flex flex-col w-1/2 bg-gradient-to-b from-gray-900/80 to-black/80 backdrop-blur-sm">
         {/* User Header */}
-        <div className="flex px-3 py-2 gap-3 sticky top-0 border-b border-gray-800 z-10">
+        <div className="flex px-4 py-3 gap-3 sticky top-0 border-b border-gray-800/50 bg-gradient-to-r from-gray-900 to-gray-900/80 backdrop-blur-sm z-10">
           {currentPost?.user && (
             <ProfileImage user={currentPost?.user} username />
           )}
@@ -107,12 +107,12 @@ const ProfileViewer = ({
         </div>
 
         {/* Comments List */}
-        <div className="flex-1 overflow-y-auto no-scrollbar">
+        <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
           <CommentSection comments={comments} />
         </div>
 
         {/* Fixed Bottom Section */}
-        <div className="w-full border-2 border-gray-800 sticky bottom-0 right-0 overflow-y-auto no-scrollbar">
+        <div className="w-full border-t border-gray-800/50 sticky bottom-0 right-0 bg-gradient-to-t from-gray-900 to-gray-900/95 backdrop-blur-sm">
           <div className="py-2">
             <MediaIcon
               item={{ ...currentPost, currentUser }}
@@ -125,8 +125,8 @@ const ProfileViewer = ({
 
           {/* Likes Count */}
           {currentPost?.likes?.length > 0 && (
-            <div className="px-3">
-              <button className="font-semibold text-sm text-gray-600 hover:text-gray-800 transition-colors duration-200">
+            <div className="px-4">
+              <button className="font-semibold text-sm text-gray-400 hover:text-gray-300 transition-colors duration-200">
                 {currentPost?.likes?.length}{" "}
                 {currentPost?.likes?.length === 1 ? "like" : "likes"}
               </button>
@@ -134,7 +134,7 @@ const ProfileViewer = ({
           )}
 
           {/* Comment Input Form */}
-          <div className="p-3 border-t border-gray-800">
+          <div className="p-3 border-t border-gray-800/50">
             <CommentForm
               item={currentPost}
               type={type}
@@ -149,13 +149,13 @@ const ProfileViewer = ({
         <>
           <button
             onClick={prev}
-            className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full"
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white p-3 rounded-full transition-all duration-200 hover:scale-110"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <button
             onClick={next}
-            className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full"
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white p-3 rounded-full transition-all duration-200 hover:scale-110"
           >
             <ArrowRight className="w-5 h-5" />
           </button>

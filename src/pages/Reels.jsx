@@ -10,6 +10,7 @@ import {
   Share2,
   Volume2,
   VolumeX,
+  Check,
 } from "lucide-react";
 import ProfileImage from "../components/ProfileImage";
 import FollowButton from "../components/FollowButton";
@@ -21,6 +22,7 @@ import CommentForm from "../components/CommentForm";
 const Reels = () => {
   const { reels } = useSelector((state) => state.reels);
   const { user: currentUser } = useSelector((state) => state.user);
+  const [copiedReelId, setCopiedReelId] = useState(null);
 
   console.log("Reels: ", reels);
 
@@ -35,6 +37,35 @@ const Reels = () => {
   const [selectedReel, setSelectedReel] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedReelComments, setSelectedReelComments] = useState([]);
+
+  // Share function
+  const handleShare = async (reelId) => {
+    try {
+      const shareableLink = `${window.location.origin}/reels/${reelId}`;
+      await navigator.clipboard.writeText(shareableLink);
+      
+      // Show copied feedback
+      setCopiedReelId(reelId);
+      setTimeout(() => setCopiedReelId(null), 2000);
+      
+      // Optional: Show toast notification
+      showToast("Link copied to clipboard!");
+    } catch (error) {
+      console.error('Failed to copy link: ', error);
+      alert('Failed to copy link. Please try again.');
+    }
+  };
+
+  // Toast notification function
+  const showToast = (message) => {
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in-up text-sm';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
+  };
 
   useEffect(() => {
     if (selectedReel) {
@@ -96,11 +127,13 @@ const Reels = () => {
     });
     setAllMuted(newMutedState);
   };
+  
   const handleOpenComments = (reel) => {
     setSelectedReel(reel);
     setSelectedReelComments(reel.comments || []);
     setIsModalOpen(true);
   };
+  
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedReel(null);
@@ -112,14 +145,14 @@ const Reels = () => {
   }, [dispatch]);
 
   return (
-    <div className=" backdrop-blur-xl bg-black  flex text-white min-h-screen">
+    <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 flex text-white min-h-screen">
       <Sidebar />
 
       <main className="flex-1 w-full min-h-screen p-5 overflow-y-scroll snap-mandatory no-scrollbar">
         {reels?.map((reel, index) => (
           <div
             key={reel?._id || index}
-            className="relative w-full px-8 pt-5 max-w-sm mx-auto h-[90vh] snap-start flex justify-center items-center bg-black rounded-md my-5"
+            className="relative w-full px-4 pt-5 max-w-2xl mx-auto h-[90vh] snap-start flex justify-center items-center bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm rounded-2xl my-5 shadow-2xl shadow-black/30 border border-gray-800/30"
           >
             {/* Left Sight Content */}
             <div className="relative m-3 w-full h-full">
@@ -129,7 +162,7 @@ const Reels = () => {
                 loop
                 muted={allMuted}
                 playsInline
-                className="relative w-full h-full object-cover rounded-md shadow-sm"
+                className="relative w-full h-full object-cover rounded-xl shadow-lg"
                 onClick={() => handleVideoClick(reel?._id)}
               >
                 <source src={reel?.mediaUrl} type="video/mp4" />
@@ -137,11 +170,11 @@ const Reels = () => {
 
               {showIconStates[reel?._id] && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-500">
-                  <button className="bg-gray-500/50 p-4 rounded-full text-white text-6xl opacity-80">
+                  <button className="bg-black/60 backdrop-blur-sm p-4 rounded-full text-white text-6xl opacity-90 transition-all">
                     {playingStates[reel?._id] ? (
-                      <Pause size={30} />
+                      <Pause size={30} className="text-white" />
                     ) : (
-                      <Play size={30} />
+                      <Play size={30} className="text-white" />
                     )}
                   </button>
                 </div>
@@ -150,14 +183,14 @@ const Reels = () => {
               {/* Global Mute Toggle */}
               <button
                 onClick={handleMuteToggle}
-                className="absolute top-6 right-6 bg-gray-500/50 p-2 rounded-full"
+                className="absolute top-6 right-6 bg-black/60 backdrop-blur-sm hover:bg-black/80 p-2.5 rounded-full transition-all duration-200 hover:scale-105"
               >
-                {allMuted ? <VolumeX /> : <Volume2 />}
+                {allMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
               </button>
 
               {/* Caption + User */}
-              <div className="absolute bottom-0 left-4 max-w-sm text-white text-sm">
-                <div className="flex items-center gap-2">
+              <div className="absolute bottom-0 left-4 right-4 text-white text-sm bg-gradient-to-t from-black/80 to-transparent p-4 rounded-xl">
+                <div className="flex items-center gap-3 mb-2">
                   <ProfileImage user={reel?.user} username />
                   <FollowButton
                     targetUserId={reel?.user?._id}
@@ -166,38 +199,46 @@ const Reels = () => {
                   />
                 </div>
                 {reel?.caption && (
-                  <p className="mt-3">
-                    <span className="font-bold">{reel?.user?.username}</span>
-                    <span className="ml-2">{reel?.caption}</span>
+                  <p className="mt-2 text-sm leading-relaxed">
+                    <span className="font-bold text-white">{reel?.user?.username}</span>
+                    <span className="ml-2 text-gray-200">{reel?.caption}</span>
                   </p>
                 )}
               </div>
             </div>
 
             {/* Right Side Like Button */}
-            <div className="absolute -right-2 bottom-0 flex flex-col space-y-4 text-white">
-              <div className="relative">
+            <div className="absolute -right-2 bottom-20 flex flex-col space-y-5 text-white">
+              <div className="relative group">
                 <LikeButton type="reel" item={reel} />
                 {reel?.likes.length > 0 && (
-                  <span className="absolute -top-2 -right-2 text-sm bg-red-500 text-white rounded-full min-w-5 h-5 flex items-center justify-center px-1">
+                  <span className="absolute -top-2 -right-2 text-xs font-medium bg-gradient-to-r from-[#E1306C] to-[#F77737] text-white rounded-full min-w-5 h-5 flex items-center justify-center px-1 shadow-lg">
                     {reel?.likes.length || 0}
                   </span>
                 )}
               </div>
-              <button className="relative">
+              <button className="relative group">
                 <MessageCircleHeart
                   size={26}
                   onClick={() => handleOpenComments(reel)}
-                  className="hover:text-gray-300 relative"
+                  className="hover:text-[#E1306C] transition-colors duration-200"
                 />
                 {reel?.comments.length > 0 && (
-                  <span className="absolute -top-2 -right-2 text-sm bg-red-500 text-white rounded-full min-w-5 h-5 flex items-center justify-center px-1">
+                  <span className="absolute -top-2 -right-2 text-xs font-medium bg-gradient-to-r from-[#E1306C] to-[#F77737] text-white rounded-full min-w-5 h-5 flex items-center justify-center px-1 shadow-lg">
                     {reel?.comments.length || 0}
                   </span>
                 )}
               </button>
-              <button className="hover:text-gray-300">
-                <Share2 size={26} />
+              {/* Share Button with Copy Functionality */}
+              <button 
+                onClick={() => handleShare(reel?._id)}
+                className="relative group hover:text-[#E1306C] transition-colors duration-200"
+              >
+                {copiedReelId === reel?._id ? (
+                  <Check size={26} className="text-green-500" />
+                ) : (
+                  <Share2 size={26} />
+                )}
               </button>
             </div>
           </div>
@@ -213,29 +254,29 @@ const Reels = () => {
           initialHeight="h-auto"
           showCloseBtn
         >
-          <div className="flex flex-col w-full h-[500px] bg-black/50 rounded-lg">
-            <div className="flex shrink-0 p-3 border-b border-gray-700">
+          <div className="flex flex-col w-full h-[550px] bg-gradient-to-br from-gray-900 to-black rounded-xl overflow-hidden border border-gray-800/50">
+            <div className="flex shrink-0 p-4 border-b border-gray-800/50 bg-gradient-to-r from-gray-900 to-gray-900/80">
               {/* Modal Header */}
               <div className="flex items-center gap-3">
                 <ProfileImage user={selectedReel?.user} />
                 <div>
-                  <h3 className="text-lg font-semibold text-white">
+                  <h3 className="text-base font-semibold text-white">
                     {selectedReel?.user?.username}
                   </h3>
-                  <p className="text-sm text-gray-400">
-                    Comments ({selectedReelComments?.length || 0})
+                  <p className="text-xs text-gray-400">
+                    {selectedReelComments?.length || 0} comments
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Comment List Section */}
-            <div className="flex-1 overflow-y-auto no-scrollbar space-y-4">
+            <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
               <CommentSection comments={selectedReelComments} />
             </div>
 
             {/* Comment Form */}
-            <div className="flex shrink-0 p-3 border-t border-gray-700">
+            <div className="flex shrink-0 p-3 border-t border-gray-800/50 bg-gradient-to-t from-gray-900 to-gray-900/80">
               <CommentForm
                 item={selectedReel}
                 type="reel"

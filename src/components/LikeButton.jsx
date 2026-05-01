@@ -13,39 +13,33 @@ const LikeButton = ({ type = "post", item, size = 24, onToggle }) => {
   const { stories } = useSelector((state) => state.stories);
   const { reels } = useSelector((state) => state.reels);
 
-  console.log("Post From Like Page: ", posts);
-
   const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
     if (!item || !currentUser) return;
 
     const liked =
-      item?.likes?.some((item) =>
-        typeof item === "object"
-          ? item?._id === currentUser?._id
-          : item === currentUser?._id,
+      item?.likes?.some((likeItem) =>
+        typeof likeItem === "object"
+          ? likeItem?._id === currentUser?._id
+          : likeItem === currentUser?._id,
       ) || false;
     setIsLiked(liked);
   }, [currentUser, item]);
 
-  //Toggle Like / Unlike
   const handleLikeToggle = async (e) => {
     e.stopPropagation();
 
     if (!item || !currentUser) return;
     const optimisticsLiked = !isLiked;
-    setIsLiked(optimisticsLiked); //Optimistic UI
+    setIsLiked(optimisticsLiked);
 
     try {
       const { data } = await axiosInstance.put(`/${type}/${item?._id}/like`);
 
-      console.log("Like Post Data: ", data);
-
       if (data?.success) {
         const updatedItem = data.post || data.reel || data.story || item;
 
-        //Update Local Like State
         const likedNow =
           data.likes?.some((like) =>
             typeof like === "object"
@@ -87,22 +81,33 @@ const LikeButton = ({ type = "post", item, size = 24, onToggle }) => {
         }
 
         if (onToggle) onToggle(updatedItem);
+      } else {
+        setIsLiked(!optimisticsLiked);
+        alert(data?.message || "Failed to like post");
       }
     } catch (error) {
       console.log("Failed to Like post: ", error);
-      alert("Failed to Like post: Try again!");
+      setIsLiked(!optimisticsLiked);
+      alert("Failed to like post. Please try again!");
     }
   };
 
   return (
     <button
       onClick={handleLikeToggle}
-      className="transition-transform hover:scale-110 active:scale-95"
+      className="transition-all duration-200 hover:scale-110 active:scale-95 focus:outline-none group"
+      aria-label={isLiked ? "Unlike" : "Like"}
     >
       {isLiked ? (
-        <HandHeart size={size} className="text-pink-700" />
+        <HeartHandshake 
+          size={size} 
+          className=" text-[#E1306C] drop-shadow-sm" 
+        />
       ) : (
-        <HandHeart size={size} className="text-white" />
+        <HandHeart 
+          size={size} 
+          className="text-gray-300 group-hover:text-[#E1306C] transition-colors duration-200" 
+        />
       )}
     </button>
   );

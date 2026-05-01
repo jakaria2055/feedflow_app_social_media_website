@@ -74,7 +74,7 @@ const Explore = () => {
   };
 
   const handleMouseMove = (e) => {
-    if (!isDragging.current) return; // ✅ FIXED
+    if (!isDragging.current) return;
 
     e.preventDefault();
     const x = e.pageX - scrollRef.current.offsetLeft;
@@ -163,39 +163,47 @@ const Explore = () => {
     const video = modalVideoRef.current;
     if (!video) return;
 
-    video.muted = !video.muted; // ✅ FIXED
+    video.muted = !video.muted;
     setIsMuted(video.muted);
   };
 
   return (
-    <div className="bg-black flex text-white w-full min-h-screen">
+    <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 flex text-white w-full min-h-screen">
       <Sidebar />
 
-      <main className="flex-1 p-5 flex flex-col overflow-auto">
+      <main className="flex-1 p-6 flex flex-col overflow-auto">
         {loading ? (
-          <p>Loading...</p>
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-[#E1306C] border-r-2 border-r-transparent"></div>
+          </div>
         ) : (
           <div className="max-w-full">
-            {/* Suggested Users */}
-            <div className="relative mb-6">
+            {/* Suggested Users Section */}
+            <div className="relative mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">
+                  Suggested for you
+                </h2>
+              </div>
+
               <button
                 onClick={() => scroll("left")}
                 disabled={!canScrollLeft}
-                className={`absolute left-0 top-1/2 -translate-y-1/2 bg-gray-800/60 hover:bg-gray-700 p-2 rounded-full z-10 ${
-                  !canScrollLeft && "opacity-30"
+                className={`absolute left-0 top-1/2 -translate-y-1/2 bg-gray-800/80 backdrop-blur-sm hover:bg-gray-700 p-2.5 rounded-full z-10 transition-all duration-200 ${
+                  !canScrollLeft ? "opacity-30 cursor-not-allowed" : "opacity-100"
                 }`}
               >
-                <ArrowLeftFromLine size={20} />
+                <ArrowLeftFromLine size={18} />
               </button>
 
               <button
                 onClick={() => scroll("right")}
                 disabled={!canScrollRight}
-                className={`absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800/60 hover:bg-gray-700 p-2 rounded-full z-10 ${
-                  !canScrollRight && "opacity-30"
+                className={`absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800/80 backdrop-blur-sm hover:bg-gray-700 p-2.5 rounded-full z-10 transition-all duration-200 ${
+                  !canScrollRight ? "opacity-30 cursor-not-allowed" : "opacity-100"
                 }`}
               >
-                <ArrowRightFromLine size={20} />
+                <ArrowRightFromLine size={18} />
               </button>
 
               <div
@@ -207,57 +215,68 @@ const Explore = () => {
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
-                className="flex gap-4 px-4 py-2 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none"
+                className="flex gap-4 px-10 py-2 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none"
               >
                 {suggestedUsers?.map((user) => (
                   <Link
                     key={user._id}
                     to={`/profile/${user._id}`}
-                    className="flex flex-col items-center gap-2 p-2 rounded-lg hover:bg-gray-700 min-w-20"
+                    className="flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-gradient-to-br hover:from-gray-800/50 hover:to-gray-900/50 transition-all duration-300 min-w-20 group"
                   >
-                    <ProfileImage user={user} />
-                    <span className="text-sm">{user.username}</span>
+                    <div className="transform transition-transform duration-300 group-hover:scale-105">
+                      <ProfileImage user={user} />
+                    </div>
+                    <span className="text-sm text-gray-300 group-hover:text-white transition-colors">
+                      {user.username}
+                    </span>
                   </Link>
                 ))}
               </div>
             </div>
 
-            {/* Posts */}
+            {/* Posts Section */}
             <div>
-              <h2 className="text-lg font-semibold mb-5">
-                Trending Posts...
+              <h2 className="text-lg font-semibold mb-5 bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">
+                Trending Posts
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {posts?.map((post, i) => (
                   <div
                     key={post._id}
                     onClick={() => openModal(i, posts)}
-                    className="relative h-56 rounded-lg overflow-hidden group cursor-pointer"
+                    className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer bg-gray-800/30 shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-pink-500/10 transition-all duration-300"
                   >
                     {post.mediaType === "image" ? (
                       <img
                         src={post.mediaUrl}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        alt="post"
                       />
                     ) : (
                       <video
                         loop
                         muted
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       >
                         <source src={post.mediaUrl} />
                       </video>
                     )}
 
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 opacity-0 group-hover:opacity-100 p-2 flex justify-between">
-                      <div className="flex items-center gap-1">
-                        <LikeButton item={post} />
-                        {post.likes.length}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MessageCircle size={16} />
-                        {post.comments.length}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      <div className="absolute bottom-0 left-0 right-0 p-3 flex justify-between">
+                        <div className="flex items-center gap-2">
+                          <LikeButton item={post} />
+                          <span className="text-white text-sm font-medium">
+                            {post.likes.length}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MessageCircle size={18} className="text-white" />
+                          <span className="text-white text-sm font-medium">
+                            {post.comments.length}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -269,7 +288,7 @@ const Explore = () => {
       </main>
 
       {/* Modal */}
-      <Modal openModal={isModalOpen} onClose={handleCloseModal}>
+      <Modal openModal={isModalOpen} onClose={handleCloseModal} initialWidth="max-w-6xl">
         <ProfileViewer
           handleModalVideoClick={handleModalVideoClick}
           handleModalMuteToggle={handleModalMuteToggle}

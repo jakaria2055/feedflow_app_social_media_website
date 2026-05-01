@@ -120,12 +120,14 @@ const PostCard = ({ post, currentUser }) => {
 
   return (
     <>
-      <div className="bg-opacity-0 my-5 rounded-xl shadow-md shadow-white max-w-[300px] w-full mx-auto">
+      <div className="bg-gradient-to-br from-gray-900/90 to-gray-900/50 backdrop-blur-sm my-5 rounded-2xl shadow-2xl shadow-black/30 border border-gray-800/50 hover:shadow-pink-500/10 hover:border-gray-700 transition-all duration-300 max-w-[500px] w-full mx-auto">
         {/* Header */}
-        <div className="flex items-center px-3 py-2 gap-2">
-          <div className="relative">
+        <div className="flex items-center px-8 py-3 gap-3">
+          <div className="flex items-center gap-3">
             <ProfileImage user={post?.user} username />
-            <p className="text-xs text-gray-600 absolute left-11 top-6">{timeAgo(post?.createdAt)}</p>
+            <p className="text-xs text-gray-500 whitespace-nowrap">
+              {timeAgo(post?.createdAt)}
+            </p>
           </div>
 
           <div>
@@ -155,32 +157,35 @@ const PostCard = ({ post, currentUser }) => {
         />
 
         {/* Caption */}
-        <div className="px-3 pb-2">
+        <div className="px-4 pb-3 space-y-1">
           {post?.likes?.length > 0 && (
-            <button className="font-semibold text-sm text-gray-400 mr-1">
+            <button className="font-semibold text-sm text-gray-400 hover:text-gray-300 transition-colors mr-1">
               {post?.likes?.length} Likes
             </button>
           )}
           {post?.caption && (
-            <div>
-              <span className="font-semibold text-sm text-gray-100 mr-1">
+            <div className="text-sm">
+              <span className="font-semibold text-gray-100 mr-2">
                 {post?.user?.username}
               </span>
-              <span className="text-sm text-gray-400">{post?.caption}</span>
+              <span className="text-gray-400">{post?.caption}</span>
             </div>
           )}
         </div>
 
         {comments?.length > 0 && (
-          <div className="px-3 pb-2 cursor-pointer">
-            <button onClick={handleOpenModal} className="text-gray-500">
+          <div className="px-4 pb-2">
+            <button
+              onClick={handleOpenModal}
+              className="text-gray-500 text-sm hover:text-gray-400 transition-colors"
+            >
               View all {comments?.length} comments
             </button>
           </div>
         )}
 
         {/* Comment Input */}
-        <div className="p-3 border-t border-gray-800">
+        <div className="p-3 border-t border-gray-800/50">
           <CommentForm
             item={post}
             type="post"
@@ -194,12 +199,12 @@ const PostCard = ({ post, currentUser }) => {
         showCloseBtn
         openModal={isModalOpen}
         onClose={handleCloseModal}
-        initialWidth="max-w-5xl"
-        initialHeight="h-[85vh]"
+        initialWidth="max-w-6xl"
+        initialHeight="h-[90vh]"
       >
-        <div className="flex w-full h-full border-gray-800 rounded-xl">
-          {/* Left SIde Media */}
-          <div className="relative flex items-center justify-center shrink-0 w-1/2 h-auto bg-black">
+        <div className="flex w-full h-full bg-gradient-to-br from-gray-900 to-black rounded-xl overflow-hidden border border-gray-800/50 shadow-2xl">
+          {/* Left Side Media */}
+          <div className="relative flex items-center justify-center shrink-0 w-1/2 h-auto bg-black/50">
             {post?.mediaType === "image" ? (
               <img
                 src={post?.mediaUrl}
@@ -207,7 +212,7 @@ const PostCard = ({ post, currentUser }) => {
                 className="max-w-full max-h-full w-full h-full object-contain"
               />
             ) : (
-              <div className="">
+              <div className="relative w-full h-full flex items-center justify-center">
                 <video
                   src={post?.mediaUrl}
                   loop
@@ -215,28 +220,28 @@ const PostCard = ({ post, currentUser }) => {
                   muted={isMuted}
                   autoPlay
                   ref={modalVideoRef}
-                  className="w-[300px] h-auto max-w-full max-h-full object-contain"
+                  className="max-w-full max-h-full object-contain rounded-lg"
                   onClick={handleModalVideoClick}
                 ></video>
                 {showIcon && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-500">
-                    <button className="bg-black/50 hover:bg-black/80 p-2 rounded-full text-center text-6xl opacity-80">
+                    <button className="bg-black/60 backdrop-blur-sm hover:bg-black/80 p-3 rounded-full text-center text-6xl opacity-90 transition-all">
                       {isPlaying ? (
                         <Play size={24} className="text-white" />
                       ) : (
-                        <Pause size={24} />
+                        <Pause size={24} className="text-white" />
                       )}
                     </button>
                   </div>
                 )}
                 <button
                   onClick={handleModalMuteToggle}
-                  className="absolute bottom-4 right-4 bg-black/50 hover:bg-black/80 p-2 rounded-full text-center text-6xl opacity-80"
+                  className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm hover:bg-black/80 p-2 rounded-full transition-all duration-200"
                 >
                   {isMuted ? (
                     <VolumeX size={18} className="text-white" />
                   ) : (
-                    <Volume2 size={18} />
+                    <Volume2 size={18} className="text-white" />
                   )}
                 </button>
               </div>
@@ -244,9 +249,9 @@ const PostCard = ({ post, currentUser }) => {
           </div>
 
           {/* Right Side: Comment Section */}
-          <div className="flex flex-col w-1/2 border-2 border-gray-800">
+          <div className="flex flex-col w-1/2 bg-gradient-to-b from-gray-900/80 to-black/80 backdrop-blur-sm">
             {/* User Header */}
-            <div className="flex px-3 py-2 gap-3 sticky top-0 border-b border-gray-800 z-10">
+            <div className="flex px-4 py-3 gap-3 sticky top-0 border-b border-gray-800/50 bg-gradient-to-r from-gray-900 to-gray-900/90 backdrop-blur-sm z-10">
               {post?.user && <ProfileImage user={post?.user} username />}
               <FollowButton
                 targetId={post?.user?._id}
@@ -261,15 +266,15 @@ const PostCard = ({ post, currentUser }) => {
             </div>
 
             {/* Fixed Bottom Section */}
-            <div className="w-full border-2 border-gray-800 sticky bottom-0 right-0 overflow-y-auto no-scrollbar">
+            <div className="w-full border-t border-gray-800/50 sticky bottom-0 right-0 bg-gradient-to-t from-gray-900 to-gray-900/95 backdrop-blur-sm">
               <div className="py-2">
                 <MediaIcon item={post} type="post" size={24} />
               </div>
 
               {/* Likes Count */}
               {post?.likes?.length > 0 && (
-                <div className="px-3">
-                  <button className="font-semibold text-sm text-gray-600 hover:text-gray-800 transition-colors duration-200">
+                <div className="px-4">
+                  <button className="font-semibold text-sm text-gray-400 hover:text-gray-300 transition-colors duration-200">
                     {post?.likes?.length}{" "}
                     {post?.likes?.length === 1 ? "like" : "likes"}
                   </button>
@@ -277,7 +282,7 @@ const PostCard = ({ post, currentUser }) => {
               )}
 
               {/* Comment Input Form */}
-              <div className="p-3 border-t border-gray-800">
+              <div className="p-3 border-t border-gray-800/50">
                 <CommentForm
                   item={post}
                   type="post"
