@@ -71,7 +71,7 @@ const NotificationBell = ({ currentUser }) => {
   // Fetch post by id
   const handleOpenPost = async (postId) => {
     try {
-      const res = await  axiosInstance.get(`/post/${postId}`);
+      const res = await axiosInstance.get(`/post/${postId}`);
 
       if (res.data.success) {
         const postData = res.data.post;
@@ -131,10 +131,10 @@ const NotificationBell = ({ currentUser }) => {
   };
 
   // Notification icon
-  const getNotification = (type) => {
+  const getNotificationIcon = (type) => {
     switch (type) {
       case "like":
-        return <Heart size={16} className="text-pink-500" />;
+        return <Heart size={16} className="text-pink-500 fill-pink-500" />;
 
       case "follow":
         return <UserPlus size={16} className="text-blue-500" />;
@@ -157,25 +157,26 @@ const NotificationBell = ({ currentUser }) => {
           className="
             relative flex items-center justify-center
             w-9 h-9 rounded-full
-            hover:bg-blue-50
-            transition-colors duration-200
+            hover:bg-white/10
+            transition-all duration-200
             group
           "
         >
           <Bell
             size={20}
-            className="text-white group-hover:text-blue-600 transition-colors"
+            className="text-gray-300 group-hover:text-[#E1306C] transition-all duration-200 group-hover:scale-110"
           />
 
           {notification?.length > 0 && (
             <span
               className="
                 absolute -top-1 -right-1
-                bg-gradient-to-r from-red-500 to-pink-500
+                bg-gradient-to-r from-[#E1306C] to-[#F77737]
                 text-white text-[10px] font-semibold
-                rounded-full w-5 h-5
+                rounded-full min-w-[18px] h-[18px]
                 flex items-center justify-center
-                shadow-md animate-pulse
+                shadow-lg shadow-pink-500/30
+                animate-pulse
               "
             >
               {notification?.length > 9 ? "9+" : notification?.length}
@@ -187,76 +188,87 @@ const NotificationBell = ({ currentUser }) => {
         {isOpen && (
           <div
             className="
-              absolute top-10 left-0 sm:left-5 sm:right-0
+              absolute top-10 left-0 sm:left-auto sm:-right-80
               w-[92vw] sm:w-80 max-w-[360px]
-              bg-white shadow-2xl rounded-xl
-              border border-gray-200
+              bg-gradient-to-b from-gray-800 to-gray-900
+              shadow-2xl rounded-xl
+              border border-gray-700/50
               z-50 max-h-[75vh] overflow-y-auto
-              animate-[fadeIn_0.25s_ease-out]
+              animate-in fade-in slide-in-from-top-2 duration-200
             "
           >
             {/* Header */}
             <div
               className="
-                p-3 border-b border-gray-200
+                p-3 border-b border-gray-700/50
                 flex justify-between items-center
-                bg-gray-50 rounded-t-xl
+                bg-gray-800/50 rounded-t-xl sticky top-0 z-10
               "
             >
-              <h3 className="font-semibold text-gray-800">Notifications</h3>
+              <h3 className="font-semibold text-white text-sm">
+                Notifications
+              </h3>
 
               <button
                 className="
-                  text-sm text-blue-600
-                  hover:text-blue-800
+                  text-xs text-[#E1306C]
+                  hover:text-[#F77737]
                   flex items-center gap-1
-                  transition-colors
+                  transition-all duration-200
+                  hover:scale-105
                 "
               >
-                <Check size={14} />
+                <Check size={12} />
                 Mark all as read
               </button>
             </div>
 
             {/* Empty */}
             {notification?.length === 0 ? (
-              <div className="p-6 text-center text-gray-400 italic">
-                🎉 No Notifications Yet
+              <div className="p-8 text-center">
+                <Bell size={48} className="text-gray-600 mx-auto mb-3" />
+                <p className="text-gray-400 text-sm">No Notifications Yet</p>
+                <p className="text-gray-500 text-xs mt-1">
+                  When someone interacts with you, it'll show up here
+                </p>
               </div>
             ) : (
               notification?.slice(0, 10).map((notify, index) => (
                 <div
                   key={`${notify.userId}-${index}`}
                   className={`
-                      p-3 border-b border-gray-100
-                      cursor-pointer transition-all duration-200
-                      hover:bg-blue-50
-                      ${
-                        notify.read
-                          ? "bg-gray-50 text-gray-700"
-                          : "bg-white font-medium text-gray-900"
-                      }
-                    `}
+                    p-3 border-b border-gray-700/30
+                    cursor-pointer transition-all duration-200
+                    hover:bg-gray-800/50
+                    ${
+                      notify.read
+                        ? "bg-gray-800/20 text-gray-400"
+                        : "bg-gradient-to-r from-gray-800/40 to-gray-800/20 font-medium text-white"
+                    }
+                  `}
                 >
                   <div className="flex items-start gap-3">
-                    {/* Icon */}
-                    <div className="flex shrink-0 mt-1">
-                      {getNotification(notify.type)}
+                    {/* Icon Container */}
+                    <div className="flex shrink-0 mt-1 p-1.5 rounded-full bg-gray-800/50">
+                      {getNotificationIcon(notify.type)}
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       {/* Message */}
-                      <p className="text-sm text-gray-800">{notify?.message}</p>
+                      <p className={`text-sm ${notify.read ? 'text-gray-400' : 'text-white'} break-words`}>
+                        {notify?.message}
+                      </p>
 
                       {/* Action Buttons */}
-                      <div className="flex items-center gap-3 mt-1">
+                      <div className="flex items-center gap-3 mt-1.5">
                         {/* Profile */}
                         <Link
                           to={`/profile/${notify.userId}`}
                           className="
-                              text-xs text-blue-600
-                              hover:underline
+                              text-xs text-[#E1306C]
+                              hover:text-[#F77737]
+                              transition-colors duration-200
                             "
                         >
                           View Profile
@@ -267,10 +279,9 @@ const NotificationBell = ({ currentUser }) => {
                           <button
                             onClick={async (e) => {
                               e.stopPropagation();
-
                               await handleOpenPost(notify.postId);
                             }}
-                            className="text-xs text-green-600 hover:underline font-medium"
+                            className="text-xs text-green-500 hover:text-green-400 transition-colors duration-200 font-medium"
                           >
                             See Post
                           </button>
@@ -299,14 +310,14 @@ const NotificationBell = ({ currentUser }) => {
         initialHeight="h-[85vh]"
       >
         {selectedPost && (
-          <div className="flex w-full h-full rounded-xl overflow-hidden">
-            {/* LEFT */}
-            <div className="relative flex items-center justify-center w-1/2 bg-black">
+          <div className="flex w-full h-full rounded-xl overflow-hidden bg-gradient-to-br from-gray-900 to-black">
+            {/* LEFT SIDE - Media */}
+            <div className="relative flex items-center justify-center w-1/2 bg-black/50">
               {selectedPost?.mediaType === "image" ? (
                 <img
                   src={selectedPost?.mediaUrl}
                   alt={selectedPost?.caption}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain rounded-lg"
                 />
               ) : (
                 <div className="relative w-full h-full flex items-center justify-center">
@@ -318,13 +329,13 @@ const NotificationBell = ({ currentUser }) => {
                     muted={isMuted}
                     playsInline
                     onClick={handleModalVideoClick}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain rounded-lg"
                   />
 
-                  {/* Play Pause */}
+                  {/* Play Pause Overlay */}
                   {showIcon && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-black/60 p-3 rounded-full">
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-500">
+                      <div className="bg-black/60 backdrop-blur-sm p-3 rounded-full">
                         {isPlaying ? (
                           <Play size={24} className="text-white" />
                         ) : (
@@ -334,13 +345,13 @@ const NotificationBell = ({ currentUser }) => {
                     </div>
                   )}
 
-                  {/* Mute */}
+                  {/* Mute Button */}
                   <button
                     onClick={handleModalMuteToggle}
                     className="
                       absolute bottom-4 right-4
-                      bg-black/60 hover:bg-black/80
-                      p-2 rounded-full
+                      bg-black/60 backdrop-blur-sm hover:bg-black/80
+                      p-2 rounded-full transition-all duration-200 hover:scale-105
                     "
                   >
                     {isMuted ? (
@@ -353,45 +364,45 @@ const NotificationBell = ({ currentUser }) => {
               )}
             </div>
 
-            {/* RIGHT */}
-            <div className="flex flex-col w-1/2 border-l border-gray-200 bg-black">
+            {/* RIGHT SIDE - Comments Section */}
+            <div className="flex flex-col w-1/2 bg-gradient-to-b from-gray-900 to-black">
               {/* Header */}
               <div
                 className="
                   flex items-center gap-3
-                  p-3 border-b border-gray-200
+                  p-3 border-b border-gray-800/50
+                  bg-gradient-to-r from-gray-900 to-gray-900/80
                 "
               >
                 <ProfileImage user={selectedPost?.user} username />
-
                 <FollowButton
                   targetUserId={selectedPost?.user?._id}
                   currentUser={currentUser}
                 />
               </div>
 
-              {/* Comments */}
+              {/* Comments Section */}
               <div className="flex-1 overflow-y-auto no-scrollbar">
                 <CommentSection comments={comments} />
               </div>
 
-              {/* Bottom */}
-              <div className="border-t border-gray-200">
+              {/* Bottom Section */}
+              <div className="border-t border-gray-800/50 bg-gradient-to-t from-gray-900 to-gray-900/80">
                 <div className="p-2">
                   <MediaIcon item={selectedPost} type="post" size={24} />
                 </div>
 
-                {/* Likes */}
+                {/* Likes Count */}
                 {selectedPost?.likes?.length > 0 && (
                   <div className="px-3 pb-2">
-                    <p className="text-sm font-semibold text-gray-500">
-                      {selectedPost?.likes?.length} likes
+                    <p className="text-sm font-semibold text-gray-400">
+                      {selectedPost?.likes?.length.toLocaleString()} likes
                     </p>
                   </div>
                 )}
 
                 {/* Comment Form */}
-                <div className="p-3 border-t border-gray-200">
+                <div className="p-3 border-t border-gray-800/50">
                   <CommentForm
                     item={selectedPost}
                     type="post"

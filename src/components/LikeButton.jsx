@@ -10,7 +10,6 @@ const LikeButton = ({ type = "post", item, size = 24, onToggle }) => {
   const dispatch = useDispatch();
   const { user: currentUser } = useSelector((state) => state.user);
   const { posts } = useSelector((state) => state.posts);
-  const { stories } = useSelector((state) => state.stories);
   const { reels } = useSelector((state) => state.reels);
 
   const [isLiked, setIsLiked] = useState(false);

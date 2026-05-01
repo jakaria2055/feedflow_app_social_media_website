@@ -55,7 +55,7 @@ const ProfileViewer = ({
             alt={currentPost?.caption}
             className="max-w-full max-h-full w-full h-full object-contain rounded-lg"
           />
-        ) : (
+        ) : currentPost?.mediaType === "video" ? (
           <div className="relative w-full h-full flex items-center justify-center">
             <video
               src={currentPost?.mediaUrl}
@@ -88,6 +88,12 @@ const ProfileViewer = ({
                 <Volume2 size={18} className="text-white" />
               )}
             </button>
+          </div>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center p-4 bg-gradient-to-br from-gray-800 to-gray-900">
+            <p className="text-white text-center text-xs break-words whitespace-pre-wrap">
+              {currentPost?.caption}
+            </p>
           </div>
         )}
       </div>

@@ -4,7 +4,7 @@ import { axiosInstance } from "../lib/axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setSavedPosts } from "../redux/slices/userSlices";
 
-const SaveButton = ({ post }) => {
+const SaveButton = ({ post, size = 24, type = "post" }) => {
   const dispatch = useDispatch();
   const { user: currentUser } = useSelector((state) => state.user);
   const [isSaved, setIsSaved] = useState(false);
@@ -27,7 +27,7 @@ const SaveButton = ({ post }) => {
     if (!currentUser?._id) return;
     setIsLoading(true);
     try {
-      const { data } = await axiosInstance.put(`/post/${post?._id}/save`);
+      const { data } = await axiosInstance.put(`/${type}/${post?._id}/save`);
       console.log("Saved Post Data: ", data);
 
       if (data?.success) {
@@ -41,7 +41,7 @@ const SaveButton = ({ post }) => {
       }
     } catch (error) {
       console.log("Failed to save post: ", error);
-      alert("Failed to save post: Try again!");
+      alert("Failed to save post. Please try again!");
     } finally {
       setIsLoading(false);
     }
@@ -51,12 +51,21 @@ const SaveButton = ({ post }) => {
     <button
       onClick={handleSavePost}
       disabled={isLoading}
-      className={`flex items-center ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+      className={`transition-all duration-200 hover:scale-110 active:scale-95 focus:outline-none group ${
+        isLoading ? "opacity-50 cursor-not-allowed" : ""
+      }`}
+      aria-label={isSaved ? "Unsave" : "Save"}
     >
       {isSaved ? (
-        <BookmarkCheck size={24} className="text-gray-300" />
+        <BookmarkCheck 
+          size={size} 
+          className=" text-[#E1306C] drop-shadow-sm transition-all duration-200" 
+        />
       ) : (
-        <Bookmark size={24} className="text-gray-300" />
+        <Bookmark 
+          size={size} 
+          className="text-gray-400 group-hover:text-[#E1306C] transition-all duration-200" 
+        />
       )}
     </button>
   );

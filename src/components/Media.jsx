@@ -10,9 +10,14 @@ const Media = ({
   handleVideoClick,
   handleMuteToggle,
 }) => {
+  const isImage =
+    media?.mediaType === "image" ||
+    media?.mediaUrl?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+
+    
   return (
     <div className="w-full h-[400px] sm:h-[300px] md:h-[400px] overflow-hidden">
-      {media?.mediaType === "image" ? (
+      {isImage ? (
         <img
           src={media?.mediaUrl}
           alt={media?.caption}
