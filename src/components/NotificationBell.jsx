@@ -194,7 +194,7 @@ const NotificationBell = ({ currentUser }) => {
               shadow-2xl rounded-xl
               border border-gray-700/50
               z-50 max-h-[75vh] overflow-y-auto
-              animate-in fade-in slide-in-from-top-2 duration-200
+              animate-in fade-in slide-in-from-top-2 duration-200 
             "
           >
             {/* Header */}

@@ -59,7 +59,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
   return (
     <>
       <aside
-        className={`fixed top-0 left-0 h-screen z-50 flex flex-col backdrop-blur-xl bg-black/80 border-r border-white/10 shadow-2xl transition-all duration-300 overflow-hidden ${
+        className={`fixed top-0 left-0 h-screen z-50 flex flex-col backdrop-blur-xl bg-black/80 border-r border-white/10 shadow-2xl transition-all duration-300 overflow-visible ${
           collapsed
             ? "w-8 items-center justify-center p-1" // ← tiny sliver
             : "w-14 md:w-64 p-2 md:p-4 gap-3 md:gap-6" // ← normal width
@@ -130,7 +130,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
               <button className="flex items-center justify-center md:justify-start gap-3 px-2 md:px-1 py-2.5 md:py-3 rounded-xl transition-all duration-300 hover:bg-white/10 text-white group w-full">
                 <NotificationBell
                   size={18}
-                  className="flex-shrink-0 transition-transform duration-300 group-hover:scale-110 text-white"
+                  className="shrink-0 transition-transform duration-300 group-hover:scale-110 text-white "
                 />
                 <span className="hidden md:inline font-medium text-sm text-white">
                   Notifications
