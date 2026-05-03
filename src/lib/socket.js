@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
 
-const BACKEND_URL = "http://localhost:2729";
+// const BACKEND_URL = "http://localhost:2729";
+export const BACKEND_URL=  "https://feedflow-server-scoial-media-website.onrender.com"
 
 let socket = null;
 
