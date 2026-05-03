@@ -1,6 +1,7 @@
 import axios from "axios";
 
+export const BACKEND_URL= "http://localhost:2729/api/v1"
 export const axiosInstance = axios.create({
-  baseURL: "http://localhost:2729/api/v1",
+  baseURL: BACKEND_URL,
   withCredentials: true,
 });

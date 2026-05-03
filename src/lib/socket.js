@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-const backendUrl = "http://localhost:2729";
+const BACKEND_URL = "http://localhost:2729";
 
 let socket = null;
 
@@ -19,7 +19,7 @@ export const connectSocket = (userId) => {
   }
 
   //Create new socket connection
-  socket = io(backendUrl, {
+  socket = io(BACKEND_URL, {
     query: { userId },
     withCredentials: true,
     transports: ["websocket", "polling"],
