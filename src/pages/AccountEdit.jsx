@@ -4,7 +4,19 @@ import { useDispatch, useSelector } from "react-redux";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
-import { ArrowLeftFromLine, Camera, User, Globe, FileText, Mail, Phone, Heart, GraduationCap, Briefcase, Users } from "lucide-react";
+import {
+  ArrowLeftFromLine,
+  Camera,
+  User,
+  Globe,
+  FileText,
+  Mail,
+  Phone,
+  Heart,
+  GraduationCap,
+  Briefcase,
+  Users,
+} from "lucide-react";
 import { setUser } from "../redux/slices/userSlices";
 
 const AccountEdit = () => {
@@ -27,6 +39,8 @@ const AccountEdit = () => {
   const [profileImage, setProfileImage] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
+
+  const [collapsed, setCollapsed] = useState(false);
 
   // Load user data
   useEffect(() => {
@@ -113,10 +127,12 @@ const AccountEdit = () => {
   if (loading) {
     return (
       <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 flex text-white min-h-screen">
-        <Sidebar />
+        <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="w-12 h-12 border-3 border-[#E1306C] border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-gray-400 font-medium">Loading Profile data...</p>
+          <p className="mt-4 text-gray-400 font-medium">
+            Loading Profile data...
+          </p>
         </div>
       </div>
     );
@@ -124,17 +140,25 @@ const AccountEdit = () => {
 
   return (
     <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 flex text-white min-h-screen">
-      <Sidebar />
+      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
-      <main className="flex-1 max-w-3xl w-full mx-auto py-8 px-4">
+      <main
+        className={`transition-all duration-300 p-3 overflow-y-scroll snap-mandatory no-scrollbar flex-1 flex flex-col gap-2 ${
+          collapsed ? "ml-2" : "ml-14 md:ml-64"
+        }`}
+      >
+        {/* <main className="flex-1 max-w-3xl w-full mx-auto py-8 px-4"> */}
         <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/30 border border-gray-700/50 p-6 md:p-8">
           {/* Header */}
           <header className="flex items-center justify-between mb-8 pb-4 border-b border-gray-700/50">
-            <Link 
+            <Link
               to={`/profile/${user?._id}`}
               className="p-2 rounded-full hover:bg-gray-800/50 transition-all duration-200 hover:scale-110 group"
             >
-              <ArrowLeftFromLine size={22} className="text-gray-400 group-hover:text-[#E1306C] transition-colors" />
+              <ArrowLeftFromLine
+                size={22}
+                className="text-gray-400 group-hover:text-[#E1306C] transition-colors"
+              />
             </Link>
 
             <h1 className="font-bold text-xl bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
@@ -195,7 +219,9 @@ const AccountEdit = () => {
                 disabled={imageUploading}
               />
             </label>
-            <p className="text-xs text-gray-500 mt-1">JPG, PNG or GIF. Max 5MB</p>
+            <p className="text-xs text-gray-500 mt-1">
+              JPG, PNG or GIF. Max 5MB
+            </p>
           </section>
 
           {/* Form */}
@@ -304,10 +330,18 @@ const AccountEdit = () => {
                   onChange={handleChange}
                   className="w-full bg-gray-800/50 border border-gray-700 rounded-xl p-3 text-white text-sm outline-none focus:border-[#E1306C] focus:ring-1 focus:ring-[#E1306C] transition-all duration-200 cursor-pointer"
                 >
-                  <option className="bg-gray-900" value="">Select Gender</option>
-                  <option className="bg-gray-900" value="male">Male</option>
-                  <option className="bg-gray-900" value="female">Female</option>
-                  <option className="bg-gray-900" value="others">Others</option>
+                  <option className="bg-gray-900" value="">
+                    Select Gender
+                  </option>
+                  <option className="bg-gray-900" value="male">
+                    Male
+                  </option>
+                  <option className="bg-gray-900" value="female">
+                    Female
+                  </option>
+                  <option className="bg-gray-900" value="others">
+                    Others
+                  </option>
                 </select>
               </div>
 
@@ -321,11 +355,21 @@ const AccountEdit = () => {
                   onChange={handleChange}
                   className="w-full bg-gray-800/50 border border-gray-700 rounded-xl p-3 text-white text-sm outline-none focus:border-[#E1306C] focus:ring-1 focus:ring-[#E1306C] transition-all duration-200 cursor-pointer"
                 >
-                  <option className="bg-gray-900" value="">Select Status</option>
-                  <option className="bg-gray-900" value="single">Single</option>
-                  <option className="bg-gray-900" value="married">Married</option>
-                  <option className="bg-gray-900" value="divorce">Divorced</option>
-                  <option className="bg-gray-900" value="widow">Widow</option>
+                  <option className="bg-gray-900" value="">
+                    Select Status
+                  </option>
+                  <option className="bg-gray-900" value="single">
+                    Single
+                  </option>
+                  <option className="bg-gray-900" value="married">
+                    Married
+                  </option>
+                  <option className="bg-gray-900" value="divorce">
+                    Divorced
+                  </option>
+                  <option className="bg-gray-900" value="widow">
+                    Widow
+                  </option>
                 </select>
               </div>
             </div>

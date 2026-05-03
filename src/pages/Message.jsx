@@ -128,10 +128,10 @@ const Message = () => {
       <MessageSidebar />
 
       <main className="rounded-xl text-white flex-1 w-full mx-auto flx flex-col gap-6 overflow-auto">
-        <div className={`flex flex-col pl-20 md:pl-0 h-screen text-white`}>
+        <div className={`flex flex-col pl-13 md:pl-0 h-screen text-white`}>
           {selectedUser && (
-            <div className="text-white sticky top-0 left-0 right-0 z-20 border-b border-gray-800/50 py-4 px-5 md:px-8 flex items-center bg-gradient-to-r from-gray-900/95 to-black/95 backdrop-blur-sm">
-              <div className="flex items-center gap-3">
+            <div className="text-white sticky top-0 left-0 right-0 z-20 border-b border-gray-800/50 py-3 px-5 md:px-8 flex items-center bg-gradient-to-r from-gray-900/95 to-black/95 backdrop-blur-sm ">
+              <div className="flex items-center  gap-3">
                 <div className="relative">
                   <ProfileImage user={selectedUser} username />
                   {isOnline ? (

@@ -43,6 +43,7 @@ const Profile = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showIcon, setShowIcon] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
 
   const handleMessageUser = () => {
     if (!profileUser) return;
@@ -72,7 +73,7 @@ const Profile = () => {
 
   const getContentType = (tab) => {
     switch (tab) {
-      case "reel":
+      case "reels":
         return "reel";
       case "saved":
         return "post";
@@ -156,11 +157,23 @@ const Profile = () => {
     dispatch(getUserById(id));
   }, [dispatch, id]);
 
+  const isVideo = (item) => {
+    if (item?.mediaType === "video") return true;
+    // fallback: detect from URL if mediaType is missing
+    if (item?.mediaUrl) {
+      return (
+        /\.(mp4|webm|ogg|mov)$/i.test(item.mediaUrl) ||
+        item.mediaUrl.includes("/video/")
+      ); // cloudinary video URL pattern
+    }
+    return false;
+  };
+
+
   const renderGridContent = () => {
     if (!profileUser) return null;
 
     const keyMap = { posts: "posts", reels: "reels", saved: "savedPosts" };
-
     const content = profileUser[keyMap[activeTab]] || [];
 
     if (!content.length)
@@ -186,13 +199,8 @@ const Profile = () => {
         onClick={() => openModal(i, content)}
         className="relative aspect-square overflow-hidden group cursor-pointer rounded-xl bg-gray-900/30 hover:shadow-xl hover:shadow-pink-500/10 transition-all duration-300"
       >
-        {item?.mediaType === "image" ? (
-          <img
-            src={item?.mediaUrl}
-            alt={item?.caption || "image"}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : item?.mediaType === "video" ? (
+        {/* ✅ Use isVideo() helper instead of mediaType check */}
+        {isVideo(item) ? (
           <video
             loop
             playsInline
@@ -201,6 +209,12 @@ const Profile = () => {
           >
             <source src={item?.mediaUrl} type="video/mp4" />
           </video>
+        ) : item?.mediaType === "image" || item?.mediaUrl ? (
+          <img
+            src={item?.mediaUrl}
+            alt={item?.caption || "image"}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center p-4 bg-gradient-to-br from-gray-800 to-gray-900">
             <p className="text-white text-center text-xs break-words whitespace-pre-wrap">
@@ -239,11 +253,99 @@ const Profile = () => {
     ));
   };
 
+  // const renderGridContent = () => {
+  //   if (!profileUser) return null;
+
+  //   const keyMap = { posts: "posts", reels: "reels", saved: "savedPosts" };
+
+  //   const content = profileUser[keyMap[activeTab]] || [];
+
+  //   if (!content.length)
+  //     return (
+  //       <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
+  //         <div className="w-20 h-20 rounded-full bg-gray-800/50 flex items-center justify-center mb-3">
+  //           <MessageCircle size={32} className="text-gray-600" />
+  //         </div>
+  //         <p className="text-gray-500 font-medium">No {activeTab} yet</p>
+  //         <p className="text-gray-600 text-sm mt-1">
+  //           {activeTab === "posts"
+  //             ? "Share your first post to get started"
+  //             : activeTab === "reels"
+  //               ? "Create your first reel"
+  //               : "Save posts to see them here"}
+  //         </p>
+  //       </div>
+  //     );
+
+  //   return content?.map((item, i) => (
+  //     <div
+  //       key={item?._id}
+  //       onClick={() => openModal(i, content)}
+  //       className="relative aspect-square overflow-hidden group cursor-pointer rounded-xl bg-gray-900/30 hover:shadow-xl hover:shadow-pink-500/10 transition-all duration-300"
+  //     >
+  //       {item?.mediaType === "image" ? (
+  //         <img
+  //           src={item?.mediaUrl}
+  //           alt={item?.caption || "image"}
+  //           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+  //         />
+  //       ) : item?.mediaType === "video" ? (
+  //         <video
+  //           loop
+  //           playsInline
+  //           muted
+  //           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+  //         >
+  //           <source src={item?.mediaUrl} type="video/mp4" />
+  //         </video>
+  //       ) : (
+  //         <div className="w-full h-full flex items-center justify-center p-4 bg-gradient-to-br from-gray-800 to-gray-900">
+  //           <p className="text-white text-center text-xs break-words whitespace-pre-wrap">
+  //             {item?.caption}
+  //           </p>
+  //         </div>
+  //       )}
+
+  //       {/* Overlay */}
+  //       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-4">
+  //         <div className="relative flex gap-6 text-white font-semibold text-sm">
+  //           <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-full">
+  //             <LikeButton
+  //               type={getContentType(activeTab)}
+  //               size={18}
+  //               item={item}
+  //               onToggle={handleLikeUpdate}
+  //             />
+  //             <span>{item?.likes?.length || 0}</span>
+  //           </div>
+  //           <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-full">
+  //             <MessageCircle size={18} strokeWidth={2} />
+  //             <span>{item?.comments?.length || 0}</span>
+  //           </div>
+  //           {profileUser?._id === currentUser?._id && (
+  //             <button
+  //               onClick={(e) => handleDeletePost(item._id, e)}
+  //               className="absolute -top-57 -right-15 flex items-center gap-1.5 hover:scale-105 hover:bg-red-500/50 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-full z-20 transition-all duration-200"
+  //             >
+  //               <Trash2 size={18} strokeWidth={2} />
+  //             </button>
+  //           )}
+  //         </div>
+  //       </div>
+  //     </div>
+  //   ));
+  // };
+
   return (
     <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 flex text-white min-h-screen">
-      <Sidebar />
+      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
-      <main className="flex-1 p-6 md:p-8 overflow-auto">
+      <main
+        className={`transition-all duration-300 p-6 overflow-auto flex-1 flex-col gap-2 ${
+          collapsed ? "ml-8" : "ml-14 md:ml-64"
+        }`}
+      >
+        {/* <main className="flex-1 p-6 md:p-8 overflow-auto"> */}
         {/* Profile Header */}
         <header className="flex flex-col md:flex-row items-center md:items-start gap-8 max-w-4xl mx-auto mb-10">
           {/* Profile Image */}

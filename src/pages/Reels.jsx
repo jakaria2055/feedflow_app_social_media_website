@@ -43,23 +43,24 @@ const Reels = () => {
     try {
       const shareableLink = `${window.location.origin}/reels/${reelId}`;
       await navigator.clipboard.writeText(shareableLink);
-      
+
       // Show copied feedback
       setCopiedReelId(reelId);
       setTimeout(() => setCopiedReelId(null), 2000);
-      
+
       // Optional: Show toast notification
       showToast("Link copied to clipboard!");
     } catch (error) {
-      console.error('Failed to copy link: ', error);
-      alert('Failed to copy link. Please try again.');
+      console.error("Failed to copy link: ", error);
+      alert("Failed to copy link. Please try again.");
     }
   };
 
   // Toast notification function
   const showToast = (message) => {
-    const toast = document.createElement('div');
-    toast.className = 'fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in-up text-sm';
+    const toast = document.createElement("div");
+    toast.className =
+      "fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in-up text-sm";
     toast.textContent = message;
     document.body.appendChild(toast);
     setTimeout(() => {
@@ -127,13 +128,13 @@ const Reels = () => {
     });
     setAllMuted(newMutedState);
   };
-  
+
   const handleOpenComments = (reel) => {
     setSelectedReel(reel);
     setSelectedReelComments(reel.comments || []);
     setIsModalOpen(true);
   };
-  
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedReel(null);
@@ -144,11 +145,18 @@ const Reels = () => {
     dispatch(getAllReels());
   }, [dispatch]);
 
+  const [collapsed, setCollapsed] = useState(false);
+
   return (
     <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 flex text-white min-h-screen">
-      <Sidebar />
+      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
-      <main className="flex-1 w-full min-h-screen p-5 overflow-y-scroll snap-mandatory no-scrollbar">
+      <main
+        className={`transition-all duration-300 p-3 overflow-y-scroll snap-mandatory no-scrollbar flex-1 flex flex-col gap-2 ${
+          collapsed ? "ml-2" : "ml-14 md:ml-64"
+        }`}
+      >
+        {/* <main className="flex-1 w-full min-h-screen p-5 overflow-y-scroll snap-mandatory no-scrollbar"> */}
         {reels?.map((reel, index) => (
           <div
             key={reel?._id || index}
@@ -200,7 +208,9 @@ const Reels = () => {
                 </div>
                 {reel?.caption && (
                   <p className="mt-2 text-sm leading-relaxed">
-                    <span className="font-bold text-white">{reel?.user?.username}</span>
+                    <span className="font-bold text-white">
+                      {reel?.user?.username}
+                    </span>
                     <span className="ml-2 text-gray-200">{reel?.caption}</span>
                   </p>
                 )}
@@ -208,7 +218,7 @@ const Reels = () => {
             </div>
 
             {/* Right Side Like Button */}
-            <div className="absolute -right-2 bottom-20 flex flex-col space-y-5 text-white">
+            <div className="absolute right-0 bottom-20 flex flex-col space-y-5 text-white">
               <div className="relative group">
                 <LikeButton type="reel" item={reel} />
                 {reel?.likes.length > 0 && (
@@ -230,7 +240,7 @@ const Reels = () => {
                 )}
               </button>
               {/* Share Button with Copy Functionality */}
-              <button 
+              <button
                 onClick={() => handleShare(reel?._id)}
                 className="relative group hover:text-[#E1306C] transition-colors duration-200"
               >

@@ -166,12 +166,17 @@ const Explore = () => {
     video.muted = !video.muted;
     setIsMuted(video.muted);
   };
-
+  const [collapsed, setCollapsed] = useState(false);
   return (
-    <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 flex text-white w-full min-h-screen">
-      <Sidebar />
+    <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 flex text-white  min-h-screen">
+      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
-      <main className="flex-1 p-6 flex flex-col overflow-auto">
+      <main
+        className={`transition-all duration-300 p-2 overflow-auto flex flex-col gap-2 ${
+          collapsed ? "ml-8" : "ml-14 md:ml-64"
+        }`}
+      >
+        {/* <main className=" p-6 flex flex-col overflow-auto ml-5"> */}
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-[#E1306C] border-r-2 border-r-transparent"></div>
@@ -190,7 +195,9 @@ const Explore = () => {
                 onClick={() => scroll("left")}
                 disabled={!canScrollLeft}
                 className={`absolute left-0 top-1/2 -translate-y-1/2 bg-gray-800/80 backdrop-blur-sm hover:bg-gray-700 p-2.5 rounded-full z-10 transition-all duration-200 ${
-                  !canScrollLeft ? "opacity-30 cursor-not-allowed" : "opacity-100"
+                  !canScrollLeft
+                    ? "opacity-30 cursor-not-allowed"
+                    : "opacity-100"
                 }`}
               >
                 <ArrowLeftFromLine size={18} />
@@ -200,7 +207,9 @@ const Explore = () => {
                 onClick={() => scroll("right")}
                 disabled={!canScrollRight}
                 className={`absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800/80 backdrop-blur-sm hover:bg-gray-700 p-2.5 rounded-full z-10 transition-all duration-200 ${
-                  !canScrollRight ? "opacity-30 cursor-not-allowed" : "opacity-100"
+                  !canScrollRight
+                    ? "opacity-30 cursor-not-allowed"
+                    : "opacity-100"
                 }`}
               >
                 <ArrowRightFromLine size={18} />
@@ -253,7 +262,7 @@ const Explore = () => {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         alt="post"
                       />
-                    ) : (
+                    ) : post.mediaType === "video" ? (
                       <video
                         loop
                         muted
@@ -261,6 +270,15 @@ const Explore = () => {
                       >
                         <source src={post.mediaUrl} />
                       </video>
+                    ) : (
+                      // Text Post
+                      <div className="px-6 py-10">
+                        <div className="rounded-2xl overflow-y-auto mr-2 max-h-[50vh] custom-scrollbar">
+                          <p className="text-gray-100 text-xs leading-relaxed whitespace-pre-wrap break-words text-center">
+                            {post?.caption}
+                          </p>
+                        </div>
+                      </div>
                     )}
 
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
@@ -288,7 +306,11 @@ const Explore = () => {
       </main>
 
       {/* Modal */}
-      <Modal openModal={isModalOpen} onClose={handleCloseModal} initialWidth="max-w-6xl">
+      <Modal
+        openModal={isModalOpen}
+        onClose={handleCloseModal}
+        initialWidth="max-w-6xl"
+      >
         <ProfileViewer
           handleModalVideoClick={handleModalVideoClick}
           handleModalMuteToggle={handleModalMuteToggle}

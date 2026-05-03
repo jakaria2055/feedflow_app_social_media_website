@@ -12,6 +12,7 @@ import FollowButton from "./FollowButton";
 import CommentSection from "./CommentSection";
 import MediaIcon from "./MediaIcon";
 import CommentForm from "./CommentForm";
+import { timeAgo } from "../lib/timeAgo";
 
 const ProfileViewer = ({
   handleModalVideoClick,
@@ -29,6 +30,17 @@ const ProfileViewer = ({
   const [currentIndex, setCurrentIndex] = useState(startIndex);
   const [comments, setComments] = useState([]);
   const [currentPost, setCurrentPost] = useState(content?.[startIndex] || null);
+
+  const isVideo = (item) => {
+    if (item?.mediaType === "video") return true;
+    if (item?.mediaUrl) {
+      return (
+        /\.(mp4|webm|ogg|mov)$/i.test(item.mediaUrl) ||
+        item.mediaUrl.includes("/video/")
+      );
+    }
+    return false;
+  };
 
   useEffect(() => {
     setCurrentPost(content?.[currentIndex] || null);
@@ -55,7 +67,7 @@ const ProfileViewer = ({
             alt={currentPost?.caption}
             className="max-w-full max-h-full w-full h-full object-contain rounded-lg"
           />
-        ) : currentPost?.mediaType === "video" ? (
+        ) : isVideo(currentPost) ? (
           <div className="relative w-full h-full flex items-center justify-center">
             <video
               src={currentPost?.mediaUrl}
@@ -90,10 +102,26 @@ const ProfileViewer = ({
             </button>
           </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center p-4 bg-gradient-to-br from-gray-800 to-gray-900">
-            <p className="text-white text-center text-xs break-words whitespace-pre-wrap">
-              {currentPost?.caption}
-            </p>
+          <div className="w-full h-full flex items-center justify-center overflow-hidden">
+            <div className="max-w-xl w-full max-h-full bg-gradient-to-br from-gray-800/70 to-gray-900/70 border border-gray-700/40 rounded-3xl p-2 shadow-2xl flex flex-col">
+              {/* Header */}
+              <div className="flex items-center gap-2 mb-5">
+                <ProfileImage user={currentPost?.user} username />
+
+                <div>
+                  <p className="text-xs text-gray-500">
+                    {timeAgo(currentPost?.createdAt)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Scrollable Text */}
+              <div className="overflow-y-auto pr-2 max-h-[70vh] custom-scrollbar">
+                <p className="text-md  leading-relaxed text-gray-100 whitespace-pre-wrap break-words">
+                  {currentPost?.caption}
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </div>
