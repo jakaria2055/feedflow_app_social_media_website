@@ -43,7 +43,7 @@ const AuthForm = ({
           </label>
           <div className="relative group">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 group-focus-within:text-[#E1306C] transition-colors">
-              <Mail size={18} />
+            <Mail size={18} />
             </span>
             <input
               type="email"

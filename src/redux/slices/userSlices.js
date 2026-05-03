@@ -230,7 +230,7 @@ export const registerUser = (userData, navigate) => async (dispatch) => {
       // const socket = connectSocket(data?.user?._id);
       // dispatch(setSocket(socket));
       setupSocketConnection(data?.user?._id, dispatch);
-      navigate("/");
+      navigate("/login");
     }
   } catch (error) {
     dispatch(setError(error?.response?.data?.message || "Register Failed"));
